@@ -1,6 +1,5 @@
 <?php
 
-require_once 'AWSSDKforPHP/sdk.class.php';
 require_once 'Site/dataobjects/SiteVideoMediaWrapper.php';
 require_once 'Site/pages/SitePage.php';
 require_once 'Site/exceptions/SiteNotAuthorizedException.php';
@@ -9,7 +8,7 @@ require_once 'Swat/SwatHtmlTag.php';
 
 /**
  * @package   Site
- * @copyright 2013-2015 silverorange
+ * @copyright 2013-2016 silverorange
  */
 class SiteAmazonCdnMediaManifestPage extends SitePage
 {
