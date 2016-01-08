@@ -14,17 +14,8 @@ $package->addRule(
 
 $package->addRule(new Rule('gadgets', 'Site', 'Gadget'));
 $package->addRule(new Rule('layouts', 'Site', 'Layout'));
-
-// TODO: not all views are in subdir
 $package->addRule(new Rule('views', 'Site', 'View'));
-
-$package->addRule(
-	new Rule(
-		'exceptions',
-		'Site',
-		'Exception'
-	)
-);
+$package->addRule(new Rule('exceptions', 'Site', 'Exception'));
 
 $package->addRule(
 	new Rule(
