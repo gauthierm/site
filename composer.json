@@ -3,7 +3,7 @@
 	"description": "Framework for building a website.",
 	"type": "library",
 	"keywords": [ "framework" ],
-	"homepage": "https://github.com/silverorange/Site",
+	"homepage": "https://github.com/silverorange/site",
 	"license": "LGPL-2.1",
 	"authors": [
 		{
