@@ -38,10 +38,10 @@
 		"codescale/ffmpeg-php": "^2.7.0",
 		"pear/mail": "^1.1.10",
 		"pear/mail_mime": "^1.10.0",
+		"pear/mdb2": "^2.4.1",
 		"pear/net_smtp": "^1.6.3",
 		"pear/services_akismet2": ">=0.3.1",
 		"pear/text_password": "^1.1.1",
-		"pear/mdb2": "^2.4.1",
 		"silverorange/silverorange_autoloader": "*",
 		"silverorange/concentrate": ">=0.0.13",
 		"silverorange/swat": "^2.20.0"
@@ -52,9 +52,10 @@
 		"ext-memcached": "Allows caching various resources.",
 		"ext-uploadprogress": "Allows showing upload progress for SiteFileEntry widgets.",
 		"pear/xml_rpc2": "Enables XML-RPC server pages.",
+		"psr/log": "Enables logging using the PSR logging interface.",
 		"silverorange/botr_api": "Enables video processing using the Bits On The Run API.",
-		"silverorange/net_notifier": "Enables async notifications from web applications using web sockets.",
-		"psr/log": "Enables logging using the PSR logging interface."
+		"silverorange/nate_go_search": "Article search indexing and CME search index framework.",
+		"silverorange/net_notifier": "Enables async notifications from web applications using web sockets."
 	},
 	"autoload": {
 		"file": [ "autoload.php" ]
