@@ -7,16 +7,20 @@
 	"license": "LGPL-2.1",
 	"authors": [
 		{
+			"name": "Charles Waddell",
+			"email": "charles@silverorange.com"
+		},
+		{
+			"name": "Isaac Grant",
+			"email": "isaac@silverorange.com"
+		},
+		{
 			"name": "Michael Gauthier",
 			"email": "mike@silverorange.com"
 		},
 		{
 			"name": "Nathan Frederikson",
 			"email": "nathan@silverorange.com"
-		},
-		{
-			"name": "Isaac Grant",
-			"email": "isaac@silverorange.com"
 		},
 		{
 			"name": "Nick Burka",
@@ -38,6 +42,7 @@
 		"pear/services_akismet2": ">=0.3.1",
 		"pear/text_password": "^1.1.1",
 		"pear/mdb2": "^2.4.1",
+		"silverorange/silverorange_autoloader": "*",
 		"silverorange/concentrate": ">=0.0.13",
 		"silverorange/swat": "^2.20.0"
 	},
