@@ -299,7 +299,7 @@ class SiteAmazonCdnModule extends SiteCdnModule
 		// least support passing in a new ACL
 		$acl = 'private';
 		if (strcasecmp($access_type, 'public') === 0) {
-			$acl = 'public-read'
+			$acl = 'public-read';
 		}
 
 		$copy_source = sprintf(
@@ -380,7 +380,6 @@ class SiteAmazonCdnModule extends SiteCdnModule
 			if ($expires === null) {
 				$uri = $this->s3->getObjectUrl(
 					array(
-						$this
 						'Bucket' => $this->bucket,
 						'Key'    => $filename
 					)
@@ -478,7 +477,7 @@ class SiteAmazonCdnModule extends SiteCdnModule
 			}
 
 			$distribution = ($expires === null)
-				? 'streaming_distribution' :
+				? 'streaming_distribution'
 				: 'private_streaming_distribution';
 
 		} else {
