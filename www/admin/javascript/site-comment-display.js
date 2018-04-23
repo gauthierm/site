@@ -613,3 +613,5 @@ SiteCommentDisplay.setTextContent = function(element, text)
 };
 
 // }}}
+
+export default SiteCommentDisplay;

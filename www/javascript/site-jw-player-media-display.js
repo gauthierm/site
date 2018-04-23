@@ -733,3 +733,5 @@ SiteJwPlayerMediaDisplay.prototype.seek = function(position)
 };
 
 // }}}
+
+export default SiteJwPlayerMediaDisplay;

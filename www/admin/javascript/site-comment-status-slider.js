@@ -128,3 +128,5 @@ SiteCommentStatusSlider.prototype.updateLegendLabels = function()
 		}
 	}
 };
+
+export default SiteCommentStatusSlider;

@@ -698,3 +698,5 @@ SiteDialog.handleLayoutChange = function()
 	};
 
 })();
+
+export default SiteDialog;

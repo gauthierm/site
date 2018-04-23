@@ -569,3 +569,5 @@ YAHOO.util.Event.onDOMReady(function ()
 	};
 
 })();
+
+export default SiteContentSlider;

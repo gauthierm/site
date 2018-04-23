@@ -296,3 +296,5 @@ SiteGravatarEntry.prototype.getParams = function()
 		}
 	}
 })();
+
+export default SiteGravatarEntry;

@@ -581,3 +581,5 @@ SiteTagEntry.new_text = '(new)';
 SiteTagEntry.add_text = 'Add Tag';
 
 // }}}
+
+export default SiteTagEntry;
