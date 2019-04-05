@@ -13,112 +13,101 @@
 
 class SiteAccountLoginSessionCleaner extends SiteCommandLineApplication
 {
-	// {{{ public function run()
+    // {{{ public function run()
 
-	public function run()
-	{
-		parent::run();
+    public function run()
+    {
+        parent::run();
 
-		$this->debug("Cleaning out dead sessions...\n\n", true);
+        $this->debug("Cleaning out dead sessions...\n\n", true);
 
-		$sessions = $this->getSessions();
-		$locale   = SwatI18NLocale::get();
+        $sessions = $this->getSessions();
+        $locale = SwatI18NLocale::get();
 
-		$this->debug(
-			sprintf(
-				ngettext(
-					'Found %s session... ',
-					'Found %s sessions... ',
-					count($sessions)
-				),
-				$locale->formatNumber(count($sessions))
-			)
-		);
+        $this->debug(
+            sprintf(
+                ngettext(
+                    'Found %s session... ',
+                    'Found %s sessions... ',
+                    count($sessions)
+                ),
+                $locale->formatNumber(count($sessions))
+            )
+        );
 
-		$count = 0;
-		foreach ($sessions as $session) {
-			if (!$this->session->sessionFileExists($session->session_id)) {
-				// $session->delete();
-				$count++;
-			}
-		}
+        $count = 0;
+        foreach ($sessions as $session) {
+            if (!$this->session->sessionFileExists($session->session_id)) {
+                // $session->delete();
+                $count++;
+            }
+        }
 
-		$this->debug(
-			sprintf(
-				"deleted %s.\n\n",
-				$locale->formatNumber($count)
-			)
-		);
+        $this->debug(sprintf("deleted %s.\n\n", $locale->formatNumber($count)));
 
-		$this->debug("All Done.\n\n", true);
-	}
+        $this->debug("All Done.\n\n", true);
+    }
 
-	// }}}
-	// {{{ protected function getSessions()
+    // }}}
+    // {{{ protected function getSessions()
 
-	protected function getSessions()
-	{
-		$sql = 'select * from AccountLoginSession where tag %s %s';
-		$sql = sprintf(
-			$sql,
-			SwatDB::equalityOperator(null),
-			$this->db->quote(null)
-		);
+    protected function getSessions()
+    {
+        $sql = 'select * from AccountLoginSession where tag %s %s';
+        $sql = sprintf(
+            $sql,
+            SwatDB::equalityOperator(null),
+            $this->db->quote(null)
+        );
 
-		return SwatDB::query(
-			$this->db,
-			$sql,
-			SwatDBClassMap::get('SiteAccountLoginSessionWrapper')
-		);
-	}
+        return SwatDB::query(
+            $this->db,
+            $sql,
+            SwatDBClassMap::get('SiteAccountLoginSessionWrapper')
+        );
+    }
 
-	// }}}
+    // }}}
 
-	// boilerplate
-	// {{{ protected function getDefaultModuleList()
+    // boilerplate
+    // {{{ protected function getDefaultModuleList()
 
-	/**
-	 * Gets the list of modules to load for this search indexer
-	 *
-	 * @return array the list of modules to load for this application.
-	 *
-	 * @see SiteApplication::getDefaultModuleList()
-	 */
-	protected function getDefaultModuleList()
-	{
-		return array_merge(
-			parent::getDefaultModuleList(),
-			[
-				'config' => SiteConfigModule::class,
-				'database' => SiteDatabaseModule::class,
-				'session' => SiteSessionModule::class,
-			]
-		);
-	}
+    /**
+     * Gets the list of modules to load for this search indexer
+     *
+     * @return array the list of modules to load for this application.
+     *
+     * @see SiteApplication::getDefaultModuleList()
+     */
+    protected function getDefaultModuleList()
+    {
+        return array_merge(parent::getDefaultModuleList(), [
+            'config' => SiteConfigModule::class,
+            'database' => SiteDatabaseModule::class,
+            'session' => SiteSessionModule::class
+        ]);
+    }
 
-	// }}}
-	// {{{ protected function addConfigDefinitions()
+    // }}}
+    // {{{ protected function addConfigDefinitions()
 
-	/**
-	 * Adds configuration definitions to the config module of this application
-	 *
-	 * @param SiteConfigModule $config the config module of this application to
-	 *                                  which to add the config definitions.
-	 */
-	protected function addConfigDefinitions(SiteConfigModule $config)
-	{
-		parent::addConfigDefinitions($config);
-	}
+    /**
+     * Adds configuration definitions to the config module of this application
+     *
+     * @param SiteConfigModule $config the config module of this application to
+     *                                  which to add the config definitions.
+     */
+    protected function addConfigDefinitions(SiteConfigModule $config)
+    {
+        parent::addConfigDefinitions($config);
+    }
 
-	// }}}
-	// {{{ protected function configure()
+    // }}}
+    // {{{ protected function configure()
 
-	protected function configure(SiteConfigModule $config)
-	{
-		parent::configure($config);
-		$this->database->dsn = $config->database->dsn;
-	}
-
+    protected function configure(SiteConfigModule $config)
+    {
+        parent::configure($config);
+        $this->database->dsn = $config->database->dsn;
+    }
 }
-
-?>

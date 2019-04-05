@@ -10,5 +10,3 @@
 class SiteCommandLineException extends SiteException
 {
 }
-
-?>

@@ -10,160 +10,158 @@
  */
 class SiteAccountChangePasswordPage extends SiteEditPage
 {
-	// {{{ protected function getUiXml()
+    // {{{ protected function getUiXml()
 
-	protected function getUiXml()
-	{
-		return __DIR__.'/account-change-password.xml';
-	}
+    protected function getUiXml()
+    {
+        return __DIR__ . '/account-change-password.xml';
+    }
 
-	// }}}
-	// {{{ protected function isNew()
+    // }}}
+    // {{{ protected function isNew()
 
-	protected function isNew(SwatForm $form)
-	{
-		return false;
-	}
+    protected function isNew(SwatForm $form)
+    {
+        return false;
+    }
 
-	// }}}
+    // }}}
 
-	// init phase
-	// {{{ public function init()
+    // init phase
+    // {{{ public function init()
 
-	public function init()
-	{
-		if (!$this->app->session->isLoggedIn()) {
-			$this->app->relocate($this->app->config->uri->account_login);
-		}
+    public function init()
+    {
+        if (!$this->app->session->isLoggedIn()) {
+            $this->app->relocate($this->app->config->uri->account_login);
+        }
 
-		parent::init();
-	}
+        parent::init();
+    }
 
-	// }}}
-	// {{{ protected function initInternal()
+    // }}}
+    // {{{ protected function initInternal()
 
-	protected function initInternal()
-	{
-		parent::initInternal();
+    protected function initInternal()
+    {
+        parent::initInternal();
 
-		$confirm = $this->ui->getWidget('confirm_password');
-		$confirm->password_widget = $this->ui->getWidget('password');
-	}
+        $confirm = $this->ui->getWidget('confirm_password');
+        $confirm->password_widget = $this->ui->getWidget('password');
+    }
 
-	// }}}
+    // }}}
 
-	// process phase
-	// {{{ protected function save()
+    // process phase
+    // {{{ protected function save()
 
-	protected function save(SwatForm $form)
-	{
-		$this->updatePassword();
+    protected function save(SwatForm $form)
+    {
+        $this->updatePassword();
 
-		$this->app->session->account->save();
+        $this->app->session->account->save();
 
-		$message = new SwatMessage(
-			Site::_('Account password has been updated.')
-		);
+        $message = new SwatMessage(
+            Site::_('Account password has been updated.')
+        );
 
-		$this->app->messages->add($message);
-	}
+        $this->app->messages->add($message);
+    }
 
-	// }}}
-	// {{{ protected function validate()
+    // }}}
+    // {{{ protected function validate()
 
-	protected function validate(SwatForm $form)
-	{
-		$account = $this->app->session->account;
-		$old_password = $this->ui->getWidget('old_password');
+    protected function validate(SwatForm $form)
+    {
+        $account = $this->app->session->account;
+        $old_password = $this->ui->getWidget('old_password');
 
-		if (!$old_password->hasMessage()) {
-			$crypt = $this->app->getModule('SiteCryptModule');
+        if (!$old_password->hasMessage()) {
+            $crypt = $this->app->getModule('SiteCryptModule');
 
-			$password = $old_password->value;
-			$password_hash = $account->password;
-			$password_salt = $account->password_salt;
+            $password = $old_password->value;
+            $password_hash = $account->password;
+            $password_salt = $account->password_salt;
 
-			$old_password_verified = $crypt->verifyHash(
-				$password,
-				$password_hash,
-				$password_salt
-			);
+            $old_password_verified = $crypt->verifyHash(
+                $password,
+                $password_hash,
+                $password_salt
+            );
 
-			if (!$old_password_verified) {
-				$old_password->addMessage(
-					new SwatMessage(
-						Site::_('Your password is incorrect.'),
-						'error'
-					)
-				);
-			}
-		}
-	}
+            if (!$old_password_verified) {
+                $old_password->addMessage(
+                    new SwatMessage(
+                        Site::_('Your password is incorrect.'),
+                        'error'
+                    )
+                );
+            }
+        }
+    }
 
-	// }}}
-	// {{{ protected function relocate()
+    // }}}
+    // {{{ protected function relocate()
 
-	protected function relocate(SwatForm $form)
-	{
-		$this->app->relocate('account');
-	}
+    protected function relocate(SwatForm $form)
+    {
+        $this->app->relocate('account');
+    }
 
-	// }}}
-	// {{{ protected function updatePassword()
+    // }}}
+    // {{{ protected function updatePassword()
 
-	protected function updatePassword()
-	{
-		$account = $this->app->session->account;
-		$password = $this->ui->getWidget('password')->value;
-		$crypt = $this->app->getModule('SiteCryptModule');
+    protected function updatePassword()
+    {
+        $account = $this->app->session->account;
+        $password = $this->ui->getWidget('password')->value;
+        $crypt = $this->app->getModule('SiteCryptModule');
 
-		$account->setPasswordHash($crypt->generateHash($password));
-	}
+        $account->setPasswordHash($crypt->generateHash($password));
+    }
 
-	// }}}
+    // }}}
 
-	// build phase
-	// {{{ protected function buildTitle()
+    // build phase
+    // {{{ protected function buildTitle()
 
-	protected function buildTitle()
-	{
-		parent::buildTitle();
-		$this->layout->data->title = Site::_('Choose a New Password');
-	}
+    protected function buildTitle()
+    {
+        parent::buildTitle();
+        $this->layout->data->title = Site::_('Choose a New Password');
+    }
 
-	// }}}
-	// {{{ protected function buildNavBar()
+    // }}}
+    // {{{ protected function buildNavBar()
 
-	protected function buildNavBar()
-	{
-		parent::buildNavBar();
+    protected function buildNavBar()
+    {
+        parent::buildNavBar();
 
-		if (!property_exists($this->layout, 'navbar')) {
-			return;
-		}
+        if (!property_exists($this->layout, 'navbar')) {
+            return;
+        }
 
-		$this->layout->navbar->createEntry(Site::_('New Password'));
-	}
+        $this->layout->navbar->createEntry(Site::_('New Password'));
+    }
 
-	// }}}
-	// {{{ protected function load()
+    // }}}
+    // {{{ protected function load()
 
-	protected function load(SwatForm $form)
-	{
-	}
+    protected function load(SwatForm $form)
+    {
+    }
 
-	// }}}
+    // }}}
 
-	// finalize phase
-	// {{{ public function finalize()
+    // finalize phase
+    // {{{ public function finalize()
 
-	public function finalize()
-	{
-		parent::finalize();
-		$this->layout->addBodyClass('account-change-password');
-	}
+    public function finalize()
+    {
+        parent::finalize();
+        $this->layout->addBodyClass('account-change-password');
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

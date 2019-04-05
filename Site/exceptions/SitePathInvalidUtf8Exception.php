@@ -9,39 +9,37 @@
  */
 class SitePathInvalidUtf8Exception extends SiteException
 {
-	// {{{ protected properties
+    // {{{ protected properties
 
-	/**
-	 * @var string
-	 */
-	protected $path = '';
+    /**
+     * @var string
+     */
+    protected $path = '';
 
-	// }}}
-	// {{{ public function __construct()
+    // }}}
+    // {{{ public function __construct()
 
-	public function __construct($message, $code = 0, $raw_path = '')
-	{
-		parent::__construct($message, $code);
-		$this->path = $raw_path;
-	}
+    public function __construct($message, $code = 0, $raw_path = '')
+    {
+        parent::__construct($message, $code);
+        $this->path = $raw_path;
+    }
 
-	// }}}
-	// {{{ public function getRawPath()
+    // }}}
+    // {{{ public function getRawPath()
 
-	public function getRawPath()
-	{
-		return $this->path;
-	}
+    public function getRawPath()
+    {
+        return $this->path;
+    }
 
-	// }}}
-	// {{{ public function getEscapedPath()
+    // }}}
+    // {{{ public function getEscapedPath()
 
-	public function getEscapedPath()
-	{
-		return SwatString::escapeBinary($this->getRawPath());
-	}
+    public function getEscapedPath()
+    {
+        return SwatString::escapeBinary($this->getRawPath());
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

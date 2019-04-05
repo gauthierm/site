@@ -9,198 +9,204 @@
  */
 class SiteAccountIndex extends AdminSearch
 {
-	// init phase
-	// {{{ protected function initInternal()
+    // init phase
+    // {{{ protected function initInternal()
 
-	protected function initInternal()
-	{
-		parent::initInternal();
+    protected function initInternal()
+    {
+        parent::initInternal();
 
-		$this->ui->mapClassPrefixToPath('Site', 'Site');
-		$this->ui->loadFromXML($this->getSearchXml());
-		$this->ui->loadFromXML($this->getUiXml());
+        $this->ui->mapClassPrefixToPath('Site', 'Site');
+        $this->ui->loadFromXML($this->getSearchXml());
+        $this->ui->loadFromXML($this->getUiXml());
 
-		if ($this->app->isMultipleInstanceAdmin() &&
-			$this->ui->hasWidget('search_instance')) {
+        if (
+            $this->app->isMultipleInstanceAdmin() &&
+            $this->ui->hasWidget('search_instance')
+        ) {
+            $search_instance = $this->ui->getWidget('search_instance');
+            $search_instance->show_blank = true;
+            $options = SwatDB::getOptionArray(
+                $this->app->db,
+                'Instance',
+                'title',
+                'id',
+                'title'
+            );
 
-			$search_instance = $this->ui->getWidget('search_instance');
-			$search_instance->show_blank = true;
-			$options = SwatDB::getOptionArray($this->app->db,
-				'Instance', 'title', 'id', 'title');
+            if (count($options) > 1) {
+                $search_instance->addOptionsByArray($options);
+                $search_instance->parent->visible = true;
+            }
+        }
+    }
 
-			if (count($options) > 1) {
-				$search_instance->addOptionsByArray($options);
-				$search_instance->parent->visible = true;
-			}
-		}
-	}
+    // }}}
+    // {{{ protected function getSearchXml()
 
-	// }}}
-	// {{{ protected function getSearchXml()
+    protected function getSearchXml()
+    {
+        return __DIR__ . '/search.xml';
+    }
 
-	protected function getSearchXml()
-	{
-		return __DIR__.'/search.xml';
-	}
+    // }}}
+    // {{{ protected function getUiXml()
 
-	// }}}
-	// {{{ protected function getUiXml()
+    protected function getUiXml()
+    {
+        return __DIR__ . '/index.xml';
+    }
 
-	protected function getUiXml()
-	{
-		return __DIR__.'/index.xml';
-	}
+    // }}}
 
-	// }}}
+    // process phase
+    // {{{ protected function processActions()
 
-	// process phase
-	// {{{ protected function processActions()
+    protected function processActions(SwatView $view, SwatActions $actions)
+    {
+        $num = count($view->getSelection());
 
-	protected function processActions(SwatView $view, SwatActions $actions)
-	{
-		$num = count($view->getSelection());
+        switch ($actions->selected->id) {
+            case 'delete':
+                $this->app->replacePage('Account/Delete');
+                $this->app->getPage()->setItems($view->getSelection());
+                break;
+        }
+    }
 
-		switch ($actions->selected->id) {
-		case 'delete':
-			$this->app->replacePage('Account/Delete');
-			$this->app->getPage()->setItems($view->getSelection());
-			break;
-		}
-	}
+    // }}}
+    // {{{ protected function processInternal()
 
-	// }}}
-	// {{{ protected function processInternal()
+    protected function processInternal()
+    {
+        parent::processInternal();
 
-	protected function processInternal()
-	{
-		parent::processInternal();
+        $pager = $this->ui->getWidget('pager');
+        $pager->process();
+    }
 
-		$pager = $this->ui->getWidget('pager');
-		$pager->process();
-	}
+    // }}}
 
-	// }}}
+    // build phase
+    // {{{ protected function buildInternal()
 
-	// build phase
-	// {{{ protected function buildInternal()
+    protected function buildInternal()
+    {
+        parent::buildInternal();
 
-	protected function buildInternal()
-	{
-		parent::buildInternal();
+        $view = $this->ui->getWidget('index_view');
 
-		$view = $this->ui->getWidget('index_view');
+        if (
+            $view->hasColumn('instance') &&
+            $this->ui->hasWidget('search_instance')
+        ) {
+            $view->getColumn('instance')->visible =
+                $this->ui->getWidget('search_instance')->value === null &&
+                $this->ui->getWidget('search_instance')->parent->visible;
+        }
+    }
 
-		if ($view->hasColumn('instance') &&
-			$this->ui->hasWidget('search_instance')) {
+    // }}}
+    // {{{ protected function getTableModel()
 
-			$view->getColumn('instance')->visible =
-				($this->ui->getWidget('search_instance')->value === null) &&
-				$this->ui->getWidget('search_instance')->parent->visible;
-		}
-	}
+    protected function getTableModel(SwatView $view)
+    {
+        $search = $this->getAccountSearch();
 
-	// }}}
-	// {{{ protected function getTableModel()
+        $pager = $this->ui->getWidget('pager');
+        $pager->total_records = SwatDB::queryOne(
+            $this->app->db,
+            sprintf(
+                'select count(1) from Account %s where %s',
+                $search->getJoinClause(),
+                $this->getWhereClause()
+            )
+        );
 
-	protected function getTableModel(SwatView $view)
-	{
-		$search = $this->getAccountSearch();
+        $sql = sprintf(
+            $this->getSQL(),
+            $search->getJoinClause(),
+            $this->getWhereClause(),
+            $this->getOrderByClause($view, $search->getOrderByClause())
+        );
 
-		$pager = $this->ui->getWidget('pager');
-		$pager->total_records = SwatDB::queryOne(
-			$this->app->db,
-			sprintf(
-				'select count(1) from Account %s where %s',
-				$search->getJoinClause(),
-				$this->getWhereClause()
-			)
-		);
+        $this->app->db->setLimit($pager->page_size, $pager->current_record);
 
-		$sql = sprintf(
-			$this->getSQL(),
-			$search->getJoinClause(),
-			$this->getWhereClause(),
-			$this->getOrderByClause($view, $search->getOrderByClause())
-		);
+        $accounts = SwatDB::query($this->app->db, $sql);
 
-		$this->app->db->setLimit($pager->page_size, $pager->current_record);
+        if (count($accounts) > 0) {
+            $this->ui->getWidget(
+                'results_message'
+            )->content = $pager->getResultsMessage('result', 'results');
+        }
 
-		$accounts = SwatDB::query($this->app->db, $sql);
+        $class_name = SwatDBClassMap::get('SiteAccount');
+        $store = new SwatTableStore();
+        foreach ($accounts as $row) {
+            if ($row instanceof SiteAccount) {
+                $account = $row;
+            } else {
+                $account = new $class_name($row);
+                $account->setDatabase($this->app->db);
+            }
+            $store->add($this->getDetailsStore($account, $row));
+        }
 
-		if (count($accounts) > 0) {
-			$this->ui->getWidget('results_message')->content =
-				$pager->getResultsMessage('result', 'results');
-		}
+        return $store;
+    }
 
-		$class_name = SwatDBClassMap::get('SiteAccount');
-		$store = new SwatTableStore();
-		foreach ($accounts as $row) {
-			if ($row instanceof SiteAccount) {
-				$account = $row;
-			} else {
-				$account = new $class_name($row);
-				$account->setDatabase($this->app->db);
-			}
-			$store->add($this->getDetailsStore($account, $row));
-		}
+    // }}}
+    // {{{ protected function getDetailsStore()
 
-		return $store;
-	}
+    protected function getDetailsStore(SiteAccount $account, $row)
+    {
+        $ds = new SwatDetailsStore($account);
+        $ds->fullname = $account->getFullname();
 
-	// }}}
-	// {{{ protected function getDetailsStore()
+        return $ds;
+    }
 
-	protected function getDetailsStore(SiteAccount $account, $row)
-	{
-		$ds = new SwatDetailsStore($account);
-		$ds->fullname = $account->getFullname();
+    // }}}
+    // {{{ protected function getSQL()
 
-		return $ds;
-	}
-
-	// }}}
-	// {{{ protected function getSQL()
-
-	protected function getSQL()
-	{
-		return 'select Account.id, Account.fullname,
+    protected function getSQL()
+    {
+        return 'select Account.id, Account.fullname,
 			Account.email, Account.instance
 			from Account
 			%s
 			where %s
 			order by %s';
-	}
+    }
 
-	// }}}
-	// {{{ protected function getWhereClause()
+    // }}}
+    // {{{ protected function getWhereClause()
 
-	protected function getWhereClause()
-	{
-		$search = $this->getAccountSearch();
+    protected function getWhereClause()
+    {
+        $search = $this->getAccountSearch();
 
-		return sprintf(
-			'delete_date %s %s and %s',
-			SwatDB::equalityOperator(null),
-			$this->app->db->quote(null, 'date'),
-			$search->getWhereClause()
-		);
-	}
+        return sprintf(
+            'delete_date %s %s and %s',
+            SwatDB::equalityOperator(null),
+            $this->app->db->quote(null, 'date'),
+            $search->getWhereClause()
+        );
+    }
 
-	// }}}
-	// {{{ protected function getAccountSearch()
+    // }}}
+    // {{{ protected function getAccountSearch()
 
-	protected function getAccountSearch()
-	{
-		static $search = null;
+    protected function getAccountSearch()
+    {
+        static $search = null;
 
-		if ($search === null) {
-			$search = new SiteAccountSearch($this->app, $this->ui);
-		}
+        if ($search === null) {
+            $search = new SiteAccountSearch($this->app, $this->ui);
+        }
 
-		return $search;
-	}
+        return $search;
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

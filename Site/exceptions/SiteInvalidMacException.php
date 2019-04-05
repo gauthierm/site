@@ -10,5 +10,3 @@
 class SiteInvalidMacException extends SwatException
 {
 }
-
-?>

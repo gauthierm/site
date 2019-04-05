@@ -10,256 +10,259 @@
  */
 class SitePath implements Iterator, Countable
 {
-	// {{{ private properties
+    // {{{ private properties
 
-	/**
-	 * The entries in this path
-	 *
-	 * This is an array of {@link SitePathEntry} objects
-	 *
-	 * @var array
-	 *
-	 * @see SitePath::addEntry()
-	 */
-	private $path_entries = array();
+    /**
+     * The entries in this path
+     *
+     * This is an array of {@link SitePathEntry} objects
+     *
+     * @var array
+     *
+     * @see SitePath::addEntry()
+     */
+    private $path_entries = array();
 
-	/**
-	 * The current index of the iterator interface
-	 *
-	 * @var integer
-	 */
-	private $current_index = 0;
+    /**
+     * The current index of the iterator interface
+     *
+     * @var integer
+     */
+    private $current_index = 0;
 
-	// }}}
-	// {{{ public final function addEntry()
+    // }}}
+    // {{{ public final function addEntry()
 
-	/**
-	 * Adds an entry to this path
-	 *
-	 * Entries are always added to the beginning of the path. This way path
-	 * strings can be parsed left-to-right and entries can be added in the
-	 * same order.
-	 *
-	 * @param SitePathEntry $entry the entry to add.
-	 */
-	public final function addEntry(SitePathEntry $entry)
-	{
-		array_unshift($this->path_entries, $entry);
-	}
+    /**
+     * Adds an entry to this path
+     *
+     * Entries are always added to the beginning of the path. This way path
+     * strings can be parsed left-to-right and entries can be added in the
+     * same order.
+     *
+     * @param SitePathEntry $entry the entry to add.
+     */
+    final public function addEntry(SitePathEntry $entry)
+    {
+        array_unshift($this->path_entries, $entry);
+    }
 
-	// }}}
-	// {{{ public final function appendEntry()
+    // }}}
+    // {{{ public final function appendEntry()
 
-	/**
-	 * Appends an entry to the end of this path
-	 *
-	 * @param SitePathEntry $entry the entry to append.
-	 */
-	public final function appendEntry(SitePathEntry $entry)
-	{
-		$this->path_entries[] = $entry;
-	}
+    /**
+     * Appends an entry to the end of this path
+     *
+     * @param SitePathEntry $entry the entry to append.
+     */
+    final public function appendEntry(SitePathEntry $entry)
+    {
+        $this->path_entries[] = $entry;
+    }
 
-	// }}}
-	// {{{ public function addEntriesToNavBar()
+    // }}}
+    // {{{ public function addEntriesToNavBar()
 
-	/**
-	 * Convenience method to add path entries to a navbar
-	 *
-	 * @param SwatNavBar $navbar the navbar to append entries to
-	 */
-	public function addEntriesToNavBar(SwatNavBar $navbar)
-	{
-		foreach ($this->path_entries as $entry) {
-			if ($entry === $this->getFirst())
-				$link = $entry->shortname;
-			else
-				$link.= '/'.$entry->shortname;
+    /**
+     * Convenience method to add path entries to a navbar
+     *
+     * @param SwatNavBar $navbar the navbar to append entries to
+     */
+    public function addEntriesToNavBar(SwatNavBar $navbar)
+    {
+        foreach ($this->path_entries as $entry) {
+            if ($entry === $this->getFirst()) {
+                $link = $entry->shortname;
+            } else {
+                $link .= '/' . $entry->shortname;
+            }
 
-			$navbar->createEntry($entry->title, $link);
-		}
-	}
+            $navbar->createEntry($entry->title, $link);
+        }
+    }
 
-	// }}}
-	// {{{ public function hasId()
+    // }}}
+    // {{{ public function hasId()
 
-	/**
-	 * Whether or not this path contains the given id
-	 *
-	 * @return boolean true if this path contains an entry with the
-	 *                  given id and false if this path does not contain
-	 *                  such an entry.
-	 */
-	public function hasId($id)
-	{
-		$found = false;
+    /**
+     * Whether or not this path contains the given id
+     *
+     * @return boolean true if this path contains an entry with the
+     *                  given id and false if this path does not contain
+     *                  such an entry.
+     */
+    public function hasId($id)
+    {
+        $found = false;
 
-		foreach ($this as $entry) {
-			if ($entry->id == $id) {
-				$found = true;
-				break;
-			}
-		}
+        foreach ($this as $entry) {
+            if ($entry->id == $id) {
+                $found = true;
+                break;
+            }
+        }
 
-		return $found;
-	}
+        return $found;
+    }
 
-	// }}}
-	// {{{ public function getFirst()
+    // }}}
+    // {{{ public function getFirst()
 
-	/**
-	 * Retrieves the first entry in this path
-	 *
-	 * @return SitePathEntry the first entry in this path or null if there is
-	 *                         no first entry (empty path).
-	 */
-	public function getFirst()
-	{
-		if (isset($this->path_entries[0]))
-			return $this->path_entries[0];
+    /**
+     * Retrieves the first entry in this path
+     *
+     * @return SitePathEntry the first entry in this path or null if there is
+     *                         no first entry (empty path).
+     */
+    public function getFirst()
+    {
+        if (isset($this->path_entries[0])) {
+            return $this->path_entries[0];
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	// }}}
-	// {{{ public function getLast()
+    // }}}
+    // {{{ public function getLast()
 
-	/**
-	 * Retrieves the last entry in this path
-	 *
-	 * @return SitePathEntry the last entry in this path or null if there is
-	 *                         no last entry (empty path).
-	 */
-	public function getLast()
-	{
-		if (count($this) > 0)
-			return $this->path_entries[count($this) - 1];
+    /**
+     * Retrieves the last entry in this path
+     *
+     * @return SitePathEntry the last entry in this path or null if there is
+     *                         no last entry (empty path).
+     */
+    public function getLast()
+    {
+        if (count($this) > 0) {
+            return $this->path_entries[count($this) - 1];
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	// }}}
-	// {{{ public function __toString()
+    // }}}
+    // {{{ public function __toString()
 
-	/**
-	 * Gets a string representation of this path
-	 *
-	 * The string is built from the shortnames of entries within this path.
-	 * Each shortname is separated by a '/' character.
-	 *
-	 * @return string the string representation of this path.
-	 */
-	public function __toString()
-	{
-		$path = '';
-		$first = true;
+    /**
+     * Gets a string representation of this path
+     *
+     * The string is built from the shortnames of entries within this path.
+     * Each shortname is separated by a '/' character.
+     *
+     * @return string the string representation of this path.
+     */
+    public function __toString()
+    {
+        $path = '';
+        $first = true;
 
-		foreach ($this as $entry) {
-			if ($first)
-				$first = false;
-			else
-				$path.= '/';
+        foreach ($this as $entry) {
+            if ($first) {
+                $first = false;
+            } else {
+                $path .= '/';
+            }
 
-			$path.= $entry->shortname;
-		}
+            $path .= $entry->shortname;
+        }
 
-		return $path;
-	}
+        return $path;
+    }
 
-	// }}}
-	// {{{ public function current()
+    // }}}
+    // {{{ public function current()
 
-	/**
-	 * Returns the current element
-	 *
-	 * @return mixed the current element.
-	 */
-	public function current()
-	{
-		return $this->path_entries[$this->current_index];
-	}
+    /**
+     * Returns the current element
+     *
+     * @return mixed the current element.
+     */
+    public function current()
+    {
+        return $this->path_entries[$this->current_index];
+    }
 
-	// }}}
-	// {{{ public function key()
+    // }}}
+    // {{{ public function key()
 
-	/**
-	 * Returns the key of the current element
-	 *
-	 * @return integer the key of the current element
-	 */
-	public function key()
-	{
-		return $this->current_index;
-	}
+    /**
+     * Returns the key of the current element
+     *
+     * @return integer the key of the current element
+     */
+    public function key()
+    {
+        return $this->current_index;
+    }
 
-	// }}}
-	// {{{ public function next()
+    // }}}
+    // {{{ public function next()
 
-	/**
-	 * Moves forward to the next element
-	 */
-	public function next()
-	{
-		$this->current_index++;
-	}
+    /**
+     * Moves forward to the next element
+     */
+    public function next()
+    {
+        $this->current_index++;
+    }
 
-	// }}}
-	// {{{ public function rewind()
+    // }}}
+    // {{{ public function rewind()
 
-	/**
-	 * Rewinds this iterator to the first element
-	 */
-	public function rewind()
-	{
-		$this->current_index = 0;
-	}
+    /**
+     * Rewinds this iterator to the first element
+     */
+    public function rewind()
+    {
+        $this->current_index = 0;
+    }
 
-	// }}}
-	// {{{ public function valid()
+    // }}}
+    // {{{ public function valid()
 
-	/**
-	 * Checks is there is a current element after calls to rewind() and next()
-	 *
-	 * @return boolean true if there is a current element and false if there
-	 *                  is not.
-	 */
-	public function valid()
-	{
-		return isset($this->path_entries[$this->current_index]);
-	}
+    /**
+     * Checks is there is a current element after calls to rewind() and next()
+     *
+     * @return boolean true if there is a current element and false if there
+     *                  is not.
+     */
+    public function valid()
+    {
+        return isset($this->path_entries[$this->current_index]);
+    }
 
-	// }}}
-	// {{{ public function get()
+    // }}}
+    // {{{ public function get()
 
-	/**
-	 * Retrieves the an object
-	 *
-	 * @return mixed the object or null if it does not exist
-	 */
-	public function get($key = 0)
-	{
-		if (isset($this->path_entries[$key]))
-			return $this->path_entries[$key];
+    /**
+     * Retrieves the an object
+     *
+     * @return mixed the object or null if it does not exist
+     */
+    public function get($key = 0)
+    {
+        if (isset($this->path_entries[$key])) {
+            return $this->path_entries[$key];
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	// }}}
-	// {{{ public function count()
+    // }}}
+    // {{{ public function count()
 
-	/**
-	 * Gets the number of entries in this path
-	 *
-	 * Satisfies the countable interface.
-	 *
-	 * @return integer the number of entries in this path
-	 */
-	public function count()
-	{
-		return count($this->path_entries);
-	}
+    /**
+     * Gets the number of entries in this path
+     *
+     * Satisfies the countable interface.
+     *
+     * @return integer the number of entries in this path
+     */
+    public function count()
+    {
+        return count($this->path_entries);
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

@@ -9,45 +9,43 @@
  */
 class SiteAMQPJobFailureException extends SiteAMQPJobException
 {
-	// {{{ protected properties
+    // {{{ protected properties
 
-	/**
-	 * The raw AMQP response body
-	 *
-	 * @var string
-	 */
-	protected $raw_body = '';
+    /**
+     * The raw AMQP response body
+     *
+     * @var string
+     */
+    protected $raw_body = '';
 
-	// }}}
-	// {{{ public function __construct()
+    // }}}
+    // {{{ public function __construct()
 
-	/**
-	 * Creates a new exception
-	 *
-	 * @param string  $message  the message of this exception.
-	 * @param integer $code     optional. The error code of this exception.
-	 * @param string  $raw_body optional. The raw AMQP response body.
-	 */
-	public function __construct($message, $code = 0, $raw_body = '')
-	{
-		parent::__construct($message, $code);
-		$this->raw_body = (string)$raw_body;
-	}
+    /**
+     * Creates a new exception
+     *
+     * @param string  $message  the message of this exception.
+     * @param integer $code     optional. The error code of this exception.
+     * @param string  $raw_body optional. The raw AMQP response body.
+     */
+    public function __construct($message, $code = 0, $raw_body = '')
+    {
+        parent::__construct($message, $code);
+        $this->raw_body = (string) $raw_body;
+    }
 
-	// }}}
-	// {{{ public function getRawBody()
+    // }}}
+    // {{{ public function getRawBody()
 
-	/**
-	 * Gets the raw AMQP response body of this exception
-	 *
-	 * @return string the raw AMQP response body
-	 */
-	public function getRawBody()
-	{
-		return $this->raw_body;
-	}
+    /**
+     * Gets the raw AMQP response body of this exception
+     *
+     * @return string the raw AMQP response body
+     */
+    public function getRawBody()
+    {
+        return $this->raw_body;
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

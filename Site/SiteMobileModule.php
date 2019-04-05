@@ -15,186 +15,196 @@
  */
 class SiteMobileModule extends SiteApplicationModule
 {
-	// {{{ protected properties
+    // {{{ protected properties
 
-	protected $prefix = 'm';
-	protected $get_var = 'mobile';
-	protected $switch_get_var = 'mobile-version';
+    protected $prefix = 'm';
+    protected $get_var = 'mobile';
+    protected $switch_get_var = 'mobile-version';
 
-	// }}}
-	// {{{ public function init()
+    // }}}
+    // {{{ public function init()
 
-	/**
-	 * Initializes this cookie module
-	 *
-	 * No initilization tasks are performed for the cookie module.
-	 */
-	public function init()
-	{
-	}
+    /**
+     * Initializes this cookie module
+     *
+     * No initilization tasks are performed for the cookie module.
+     */
+    public function init()
+    {
+    }
 
-	// }}}
-	// {{{ public function depends()
+    // }}}
+    // {{{ public function depends()
 
-	/**
-	 * Gets the module features this module depends on
-	 *
-	 * The site memcached module optionally depends on the
-	 * SiteMultipleInstanceModule feature.
-	 *
-	 * @return array an array of {@link SiteModuleDependency} objects defining
-	 *                        the features this module depends on.
-	 */
-	public function depends()
-	{
-		$depends = parent::depends();
+    /**
+     * Gets the module features this module depends on
+     *
+     * The site memcached module optionally depends on the
+     * SiteMultipleInstanceModule feature.
+     *
+     * @return array an array of {@link SiteModuleDependency} objects defining
+     *                        the features this module depends on.
+     */
+    public function depends()
+    {
+        $depends = parent::depends();
 
-		$depends[] = new SiteApplicationModuleDependency(
-			'SiteCookieModule', true);
+        $depends[] = new SiteApplicationModuleDependency(
+            'SiteCookieModule',
+            true
+        );
 
-		return $depends;
-	}
+        return $depends;
+    }
 
-	// }}}
-	// {{{ public function getPrefix()
+    // }}}
+    // {{{ public function getPrefix()
 
-	/**
-	 * Get the URL prefix for a mobile URL
-	 *
-	 * By default, 'm', e.g. http://domain.com/m/path.
-	 *
-	 * @return string The prefix for the mobile URL
-	 */
-	public function getPrefix()
-	{
-		return $this->prefix;
-	}
+    /**
+     * Get the URL prefix for a mobile URL
+     *
+     * By default, 'm', e.g. http://domain.com/m/path.
+     *
+     * @return string The prefix for the mobile URL
+     */
+    public function getPrefix()
+    {
+        return $this->prefix;
+    }
 
-	// }}}
-	// {{{ public function displayMobileMetaTags()
+    // }}}
+    // {{{ public function displayMobileMetaTags()
 
-	/**
-	 * Display mobile meta tags for mobile-layouts.
-	 *
-	 * This is used in SiteLayout which sets SiteLayout::$data->mobile_meta_tags
-	 */
-	public function displayMobileMetaTags()
-	{
-		$meta_tag = new SwatHtmlTag('meta');
-		$meta_tag->name = 'viewport';
-		$meta_tag->content = 'width=device-width, initial-scale=1.0, '.
-			'maximum-scale=1.0, user-scalable=no';
+    /**
+     * Display mobile meta tags for mobile-layouts.
+     *
+     * This is used in SiteLayout which sets SiteLayout::$data->mobile_meta_tags
+     */
+    public function displayMobileMetaTags()
+    {
+        $meta_tag = new SwatHtmlTag('meta');
+        $meta_tag->name = 'viewport';
+        $meta_tag->content =
+            'width=device-width, initial-scale=1.0, ' .
+            'maximum-scale=1.0, user-scalable=no';
 
-		$meta_tag->display();
-	}
+        $meta_tag->display();
+    }
 
-	// }}}
-	// {{{ public function getSwitchGetVar()
+    // }}}
+    // {{{ public function getSwitchGetVar()
 
-	/**
-	 * Get the variable to append to the URL when switching to the mobile
-	 * version of the site.
-	 *
-	 * This lets us tell the switch was explicit as opposed to an automatic
-	 * redirect via SiteMobileModule::autoRelocateMobile().
-	 *
-	 * @return string The GET var
-	 */
-	public function getSwitchGetVar()
-	{
-		return $this->switch_get_var;
-	}
+    /**
+     * Get the variable to append to the URL when switching to the mobile
+     * version of the site.
+     *
+     * This lets us tell the switch was explicit as opposed to an automatic
+     * redirect via SiteMobileModule::autoRelocateMobile().
+     *
+     * @return string The GET var
+     */
+    public function getSwitchGetVar()
+    {
+        return $this->switch_get_var;
+    }
 
-	// }}}
-	// {{{ public function isMobileUrl()
+    // }}}
+    // {{{ public function isMobileUrl()
 
-	/**
-	 * Detect whether or not we're on the mobile version of the site
-	 *
-	 * When on the mobile version of the site, a GET var must be set
-	 * indicating it's the mobile version.
-	 *
-	 * @return boolean True if its the mobile site
-	 */
-	public function isMobileUrl()
-	{
-		return (isset($_GET[$this->get_var]));
-	}
+    /**
+     * Detect whether or not we're on the mobile version of the site
+     *
+     * When on the mobile version of the site, a GET var must be set
+     * indicating it's the mobile version.
+     *
+     * @return boolean True if its the mobile site
+     */
+    public function isMobileUrl()
+    {
+        return isset($_GET[$this->get_var]);
+    }
 
-	// }}}
-	// {{{ public function autoRelocateMobile()
+    // }}}
+    // {{{ public function autoRelocateMobile()
 
-	/**
-	 * Check whether the user should be redirected to the mobile version
-	 *
-	 * Usually this method would be called at the top of
-	 * SiteApplication::resolvePage(), after the modules have be initiated,
-	 * but before the page is loaded.
-	 *
-	 * The redirection works as follows:
-	 *  - First check to see if we should even attempt to redirect the user.
-	 *  - Then check if the user has explicitly indicated (via clicking a
-	 *    link whether they want the mobile or non-mobile sites)
-	 *  - Switch to the mobile site if the user is using a mobile device
-	 *
-	 * @param string $source Optional source to relocate to
-	 */
-	public function autoRelocateMobile($source = '')
-	{
-		$has_mobile_access = $this->attemptMobileRelocate();
-		$try_mobile = true;
+    /**
+     * Check whether the user should be redirected to the mobile version
+     *
+     * Usually this method would be called at the top of
+     * SiteApplication::resolvePage(), after the modules have be initiated,
+     * but before the page is loaded.
+     *
+     * The redirection works as follows:
+     *  - First check to see if we should even attempt to redirect the user.
+     *  - Then check if the user has explicitly indicated (via clicking a
+     *    link whether they want the mobile or non-mobile sites)
+     *  - Switch to the mobile site if the user is using a mobile device
+     *
+     * @param string $source Optional source to relocate to
+     */
+    public function autoRelocateMobile($source = '')
+    {
+        $has_mobile_access = $this->attemptMobileRelocate();
+        $try_mobile = true;
 
-		// if we can view the mobile site, check for the mobile cookie or the
-		// mobile get var
-		if ($has_mobile_access) {
-			if (isset($_GET[$this->switch_get_var])) {
-				$try_mobile = (boolean)$_GET[$this->switch_get_var];
-				$this->app->cookie->setCookie('mobile_enabled', $try_mobile);
-			} elseif (!isset($this->app->cookie->mobile_enabled) ||
-				$this->app->cookie->mobile_enabled) {
-				// try by default if neither the cookie nor the get var are set
-				$try_mobile = true;
-			}
-		}
+        // if we can view the mobile site, check for the mobile cookie or the
+        // mobile get var
+        if ($has_mobile_access) {
+            if (isset($_GET[$this->switch_get_var])) {
+                $try_mobile = (bool) $_GET[$this->switch_get_var];
+                $this->app->cookie->setCookie('mobile_enabled', $try_mobile);
+            } elseif (
+                !isset($this->app->cookie->mobile_enabled) ||
+                $this->app->cookie->mobile_enabled
+            ) {
+                // try by default if neither the cookie nor the get var are set
+                $try_mobile = true;
+            }
+        }
 
-		if ($this->isMobileUrl()) {
-			if ($has_mobile_access) {
-				$this->app->cookie->setCookie('mobile_enabled', true);
-			} else {
-				// go to non-mobile site if mobile is unsupported
-				$this->app->relocate($this->app->getSwitchMobileLink(false,
-					$source));
-			}
-		} elseif ($has_mobile_access && $try_mobile &&
-			$this->isMobileBrowser()) {
+        if ($this->isMobileUrl()) {
+            if ($has_mobile_access) {
+                $this->app->cookie->setCookie('mobile_enabled', true);
+            } else {
+                // go to non-mobile site if mobile is unsupported
+                $this->app->relocate(
+                    $this->app->getSwitchMobileLink(false, $source)
+                );
+            }
+        } elseif (
+            $has_mobile_access &&
+            $try_mobile &&
+            $this->isMobileBrowser()
+        ) {
+            // try to go to mobile site
+            $this->app->relocate(
+                $this->app->getSwitchMobileLink(true, $source)
+            );
+        }
+    }
 
-			// try to go to mobile site
-			$this->app->relocate($this->app->getSwitchMobileLink(true,
-				$source));
-		}
-	}
+    // }}}
+    // {{{ public function isMobileBrowser()
 
-	// }}}
-	// {{{ public function isMobileBrowser()
+    public function isMobileBrowser()
+    {
+        // if user-agent header is not present, assume desktop
+        if (!isset($_SERVER['HTTP_USER_AGENT'])) {
+            return false;
+        }
 
-	public function isMobileBrowser()
-	{
-		// if user-agent header is not present, assume desktop
-		if (!isset($_SERVER['HTTP_USER_AGENT'])) {
-			return false;
-		}
+        // regexp from http://detectmobilebrowser.com/
+        $useragent = $_SERVER['HTTP_USER_AGENT'];
 
-		// regexp from http://detectmobilebrowser.com/
-		$useragent = $_SERVER['HTTP_USER_AGENT'];
+        // cache match to make it a little faster
+        static $match;
+        if ($match !== null) {
+            return $match;
+        }
 
-		// cache match to make it a little faster
-		static $match;
-		if ($match !== null) {
-			return $match;
-		}
-
-		$match = (
-			preg_match('
+        $match =
+            preg_match(
+                '
 				/
 				android|
 				avantgo|
@@ -228,9 +238,10 @@ class SiteMobileModule extends SiteApplicationModule
 				xda|
 				xiino
 				/ix',
-				$useragent) ||
-			preg_match(
-				'/
+                $useragent
+            ) ||
+            preg_match(
+                '/
 				1207|
 				6310|
 				6590|
@@ -413,27 +424,29 @@ class SiteMobileModule extends SiteApplicationModule
 				your|
 				zeto|
 				zte\-
-				/ix', mb_substr($useragent, 0, 4)));
+				/ix',
+                mb_substr($useragent, 0, 4)
+            );
 
-		return $match;
-	}
+        return $match;
+    }
 
-	// }}}
-	// {{{ public function isHandheld()
+    // }}}
+    // {{{ public function isHandheld()
 
-	/**
-	 * Gets whether or not the browser is a handheld device
-	 *
-	 * Handheld devices include phones (iPhone, Nexus S, etc) and media
-	 * players (iPod, Zune, etc). Tablets are NOT considered handheld
-	 * devices.
-	 *
-	 * @return boolean true if the browser is a handheld device. Otherwise
-	 *                 false.
-	 */
-	public function isHandheld()
-	{
-		$exp = '/
+    /**
+     * Gets whether or not the browser is a handheld device
+     *
+     * Handheld devices include phones (iPhone, Nexus S, etc) and media
+     * players (iPod, Zune, etc). Tablets are NOT considered handheld
+     * devices.
+     *
+     * @return boolean true if the browser is a handheld device. Otherwise
+     *                 false.
+     */
+    public function isHandheld()
+    {
+        $exp = '/
 			[\s\(]Android[\s;-].*\sMobile[\s;]
 			|
 			iPhone
@@ -441,21 +454,21 @@ class SiteMobileModule extends SiteApplicationModule
 			iPod
 			/x';
 
-		return (isset($_SERVER['HTTP_USER_AGENT']) &&
-			preg_match($exp, $_SERVER['HTTP_USER_AGENT']) === 1);
-	}
+        return isset($_SERVER['HTTP_USER_AGENT']) &&
+            preg_match($exp, $_SERVER['HTTP_USER_AGENT']) === 1;
+    }
 
-	// }}}
-	// {{{ public function isIOS()
+    // }}}
+    // {{{ public function isIOS()
 
-	/**
-	 * Gets whether or not the browser is Safari running on iOS
-	 *
-	 * @return boolean true if the browser is Safari on iOS, otherwise false.
-	 */
-	public function isIOS()
-	{
-		$exp = '/
+    /**
+     * Gets whether or not the browser is Safari running on iOS
+     *
+     * @return boolean true if the browser is Safari on iOS, otherwise false.
+     */
+    public function isIOS()
+    {
+        $exp = '/
 			(
 			iPad
 			|
@@ -467,97 +480,96 @@ class SiteMobileModule extends SiteApplicationModule
 			\sSafari
 			/x';
 
-		return (isset($_SERVER['HTTP_USER_AGENT']) &&
-			preg_match($exp, $_SERVER['HTTP_USER_AGENT']) === 1);
-	}
+        return isset($_SERVER['HTTP_USER_AGENT']) &&
+            preg_match($exp, $_SERVER['HTTP_USER_AGENT']) === 1;
+    }
 
-	// }}}
-	// {{{ public function isAndroid()
+    // }}}
+    // {{{ public function isAndroid()
 
-	public function isAndroid()
-	{
-		$exp = '/Android/';
+    public function isAndroid()
+    {
+        $exp = '/Android/';
 
-		return (isset($_SERVER['HTTP_USER_AGENT']) &&
-			preg_match($exp, $_SERVER['HTTP_USER_AGENT']) === 1);
-	}
+        return isset($_SERVER['HTTP_USER_AGENT']) &&
+            preg_match($exp, $_SERVER['HTTP_USER_AGENT']) === 1;
+    }
 
-	// }}}
-	// {{{ public function getPlatformMajorVersion()
+    // }}}
+    // {{{ public function getPlatformMajorVersion()
 
-	public function getPlatformMajorVersion()
-	{
-		$version = null;
-		$exp = null;
+    public function getPlatformMajorVersion()
+    {
+        $version = null;
+        $exp = null;
 
-		if ($this->isAndroid()) {
-			$exp = '/Android\s+([\d\.]{1})/';
-		} elseif ($this->isIOS()) {
-			$exp = '/OS\s+([\d\_]{1})/';
-		}
+        if ($this->isAndroid()) {
+            $exp = '/Android\s+([\d\.]{1})/';
+        } elseif ($this->isIOS()) {
+            $exp = '/OS\s+([\d\_]{1})/';
+        }
 
-		if ($exp !== null) {
-			$matches = array();
-			if (isset($_SERVER['HTTP_USER_AGENT']) &&
-				preg_match($exp, $_SERVER['HTTP_USER_AGENT'], $matches) === 1) {
-				$version = intval($matches[1]);
-			};
-		}
+        if ($exp !== null) {
+            $matches = array();
+            if (
+                isset($_SERVER['HTTP_USER_AGENT']) &&
+                preg_match($exp, $_SERVER['HTTP_USER_AGENT'], $matches) === 1
+            ) {
+                $version = intval($matches[1]);
+            }
+        }
 
-		return $version;
-	}
+        return $version;
+    }
 
-	// }}}
-	// {{{ public function getViewport()
+    // }}}
+    // {{{ public function getViewport()
 
-	/**
-	 * Gets a meta tag containing the default viewport parameters
-	 *
-	 * The viewport is set to device-width for handheld browsers and set to
-	 * a specificed width for other browsers.
-	 *
-	 * @param integer $width the default page width for non-handheld
-	 *                       browsers.
-	 *
-	 * @return SwatHtmlTag
-	 */
-	public function getViewport($width = 980)
-	{
-		$meta = new SwatHtmlTag('meta');
-		$meta->name = 'viewport';
+    /**
+     * Gets a meta tag containing the default viewport parameters
+     *
+     * The viewport is set to device-width for handheld browsers and set to
+     * a specificed width for other browsers.
+     *
+     * @param integer $width the default page width for non-handheld
+     *                       browsers.
+     *
+     * @return SwatHtmlTag
+     */
+    public function getViewport($width = 980)
+    {
+        $meta = new SwatHtmlTag('meta');
+        $meta->name = 'viewport';
 
-		if ($this->isHandheld()) {
-			$meta->content =
-				'width=device-width, '.
-				'initial-scale=1.0, '.
-				'maximum-scale=1.0, '.
-				'minimum-scale=1.0';
-		} else {
-			$meta->content =
-				'width='.intval($width).', '.
-				'maximum-scale=1.0';
-		}
+        if ($this->isHandheld()) {
+            $meta->content =
+                'width=device-width, ' .
+                'initial-scale=1.0, ' .
+                'maximum-scale=1.0, ' .
+                'minimum-scale=1.0';
+        } else {
+            $meta->content =
+                'width=' . intval($width) . ', ' . 'maximum-scale=1.0';
+        }
 
-		return $meta;
-	}
+        return $meta;
+    }
 
-	// }}}
-	// {{{ protected function attemptMobileRelocate()
+    // }}}
+    // {{{ protected function attemptMobileRelocate()
 
-	/**
-	 * Whether or not to try redirecting a user to the mobile site
-	 *
-	 * Mobile access can be disabled to users, for instance an administrator
-	 * who always needs to see the standard version of the site.
-	 *
-	 * @return boolean
-	 */
-	protected function attemptMobileRelocate()
-	{
-		return (boolean)$this->app->config->mobile->auto_relocate;
-	}
+    /**
+     * Whether or not to try redirecting a user to the mobile site
+     *
+     * Mobile access can be disabled to users, for instance an administrator
+     * who always needs to see the standard version of the site.
+     *
+     * @return boolean
+     */
+    protected function attemptMobileRelocate()
+    {
+        return (bool) $this->app->config->mobile->auto_relocate;
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

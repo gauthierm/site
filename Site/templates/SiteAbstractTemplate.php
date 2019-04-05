@@ -7,16 +7,14 @@
  */
 abstract class SiteAbstractTemplate implements SiteTemplateInterface
 {
-	// {{{ public function asString()
+    // {{{ public function asString()
 
-	public function asString(SiteLayoutData $data)
-	{
-		ob_start();
-		$this->display($data);
-		return ob_get_clean();
-	}
+    public function asString(SiteLayoutData $data)
+    {
+        ob_start();
+        $this->display($data);
+        return ob_get_clean();
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

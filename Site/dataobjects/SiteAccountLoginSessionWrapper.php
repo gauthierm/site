@@ -9,20 +9,18 @@
  */
 class SiteAccountLoginSessionWrapper extends SwatDBRecordsetWrapper
 {
-	// {{{ protected function init()
+    // {{{ protected function init()
 
-	protected function init()
-	{
-		parent::init();
+    protected function init()
+    {
+        parent::init();
 
-		$this->row_wrapper_class = SwatDBClassMap::get(
-			'SiteAccountLoginSession'
-		);
+        $this->row_wrapper_class = SwatDBClassMap::get(
+            'SiteAccountLoginSession'
+        );
 
-		$this->index_field = 'id';
-	}
+        $this->index_field = 'id';
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

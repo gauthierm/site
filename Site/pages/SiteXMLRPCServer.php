@@ -15,55 +15,50 @@
  */
 abstract class SiteXMLRPCServer extends SitePage
 {
-	// {{{ public function process()
+    // {{{ public function process()
 
-	/**
-	 * Process the request
-	 *
-	 * This method is called by site code to process the page request. It creates
-	 * an XML-RPC server and handles a request. The XML-RPC response from the
-	 * server is output here as well.
-	 *
-	 * @xmlrpc.hidden
-	 */
-	public function process()
-	{
-		$server = XML_RPC2_Server::create(
-			$this,
-			array(
-				'encoding' => 'utf-8',
-				'input'    => 'XML_RPC2_Server_Input_PhpInput',
-			)
-		);
+    /**
+     * Process the request
+     *
+     * This method is called by site code to process the page request. It creates
+     * an XML-RPC server and handles a request. The XML-RPC response from the
+     * server is output here as well.
+     *
+     * @xmlrpc.hidden
+     */
+    public function process()
+    {
+        $server = XML_RPC2_Server::create($this, array(
+            'encoding' => 'utf-8',
+            'input' => 'XML_RPC2_Server_Input_PhpInput'
+        ));
 
-		$this->layout->startCapture('response');
-		$server->handleCall();
-		$this->layout->endCapture();
-	}
+        $this->layout->startCapture('response');
+        $server->handleCall();
+        $this->layout->endCapture();
+    }
 
-	// }}}
-	// {{{ public function __toString()
+    // }}}
+    // {{{ public function __toString()
 
-	/**
-	 * @xmlrpc.hidden
-	 */
-	public function __toString()
-	{
-		return parent::__toString();
-	}
+    /**
+     * @xmlrpc.hidden
+     */
+    public function __toString()
+    {
+        return parent::__toString();
+    }
 
-	// }}}
-	// {{{ protected function createLayout()
+    // }}}
+    // {{{ protected function createLayout()
 
-	/**
-	 * @xmlrpc.hidden
-	 */
-	protected function createLayout()
-	{
-		return new SiteXMLRPCServerLayout($this->app);
-	}
+    /**
+     * @xmlrpc.hidden
+     */
+    protected function createLayout()
+    {
+        return new SiteXMLRPCServerLayout($this->app);
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

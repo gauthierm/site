@@ -9,14 +9,12 @@
  */
 class SiteXMLRPCServerLayout extends SiteLayout
 {
-	// {{{ public function __construct()
+    // {{{ public function __construct()
 
-	public function __construct($app, $template_name = null)
-	{
-		parent::__construct($app, SiteXMLRPCServerTemplate::class);
-	}
+    public function __construct($app, $template_name = null)
+    {
+        parent::__construct($app, SiteXMLRPCServerTemplate::class);
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

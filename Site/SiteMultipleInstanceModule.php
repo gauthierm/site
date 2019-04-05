@@ -15,52 +15,57 @@
  */
 class SiteMultipleInstanceModule extends SiteApplicationModule
 {
-	// {{{ protected properties
+    // {{{ protected properties
 
-	/**
-	 * The current instance of this site
-	 *
-	 * @var SiteInstance
-	 */
-	protected $instance = null;
+    /**
+     * The current instance of this site
+     *
+     * @var SiteInstance
+     */
+    protected $instance = null;
 
-	// }}}
-	// {{{ public function init()
+    // }}}
+    // {{{ public function init()
 
-	/**
-	 * Initializes this module
-	 */
-	public function init()
-	{
-		// The config module is not yet initialized so only file-based setting
-		// values are available.
-		$config = $this->app->getModule('SiteConfigModule');
+    /**
+     * Initializes this module
+     */
+    public function init()
+    {
+        // The config module is not yet initialized so only file-based setting
+        // values are available.
+        $config = $this->app->getModule('SiteConfigModule');
 
-		$instance_shortname = SiteApplication::initVar(
-			'instance', $config->instance->default,
-			SiteApplication::VAR_GET | SiteApplication::VAR_ENV);
+        $instance_shortname = SiteApplication::initVar(
+            'instance',
+            $config->instance->default,
+            SiteApplication::VAR_GET | SiteApplication::VAR_ENV
+        );
 
-		$database = $this->app->getModule('SiteDatabaseModule');
-		$db = $database->getConnection();
+        $database = $this->app->getModule('SiteDatabaseModule');
+        $db = $database->getConnection();
 
-		if ($instance_shortname !== null) {
-			try {
-				$class_name = SwatDBClassMap::get('SiteInstance');
-				$this->instance = new $class_name();
-				$this->instance->setDatabase($db);
-				if (!$this->instance->loadFromShortname($instance_shortname)) {
-					throw new SiteNotFoundException(sprintf(
-						"No site instance with the shortname '%s' exists.",
-						$instance_shortname));
-				}
-			} catch (SiteNotFoundException $e) {
-				/*
-				 * Instance not found, display a simple apache-like 404 page
-				 * we do not have an instance to display a pretty 404 page
-				 * within
-				 */
-				header("HTTP/1.0 404 Not Found");
-				echo <<<EOD
+        if ($instance_shortname !== null) {
+            try {
+                $class_name = SwatDBClassMap::get('SiteInstance');
+                $this->instance = new $class_name();
+                $this->instance->setDatabase($db);
+                if (!$this->instance->loadFromShortname($instance_shortname)) {
+                    throw new SiteNotFoundException(
+                        sprintf(
+                            "No site instance with the shortname '%s' exists.",
+                            $instance_shortname
+                        )
+                    );
+                }
+            } catch (SiteNotFoundException $e) {
+                /*
+                 * Instance not found, display a simple apache-like 404 page
+                 * we do not have an instance to display a pretty 404 page
+                 * within
+                 */
+                header('HTTP/1.0 404 Not Found');
+                echo <<<EOD
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <html><head>
 <title>404 Not Found</title>
@@ -70,62 +75,61 @@ class SiteMultipleInstanceModule extends SiteApplicationModule
 </body></html>
 EOD;
 
-				throw($e);
-			}
-		}
-	}
+                throw $e;
+            }
+        }
+    }
 
-	// }}}
-	// {{{ public function depends()
+    // }}}
+    // {{{ public function depends()
 
-	/**
-	 * Gets the module features this module depends on
-	 *
-	 * The site session module optionally depends on the
-	 * SiteDatabaseModule feature.
-	 *
-	 * @return array an array of {@link SiteApplicationModuleDependency}
-	 *                        objects defining the features this module
-	 *                        depends on.
-	 */
-	public function depends()
-	{
-		$depends = parent::depends();
-		$depends[] = new SiteApplicationModuleDependency('SiteDatabaseModule');
-		return $depends;
-	}
+    /**
+     * Gets the module features this module depends on
+     *
+     * The site session module optionally depends on the
+     * SiteDatabaseModule feature.
+     *
+     * @return array an array of {@link SiteApplicationModuleDependency}
+     *                        objects defining the features this module
+     *                        depends on.
+     */
+    public function depends()
+    {
+        $depends = parent::depends();
+        $depends[] = new SiteApplicationModuleDependency('SiteDatabaseModule');
+        return $depends;
+    }
 
-	// }}}
-	// {{{ public function getInstance()
+    // }}}
+    // {{{ public function getInstance()
 
-	/**
-	 * Gets the current instance of this site
-	 *
-	 * @return SiteInstance the current instance of this site.
-	 */
-	public function getInstance()
-	{
-		return $this->instance;
-	}
+    /**
+     * Gets the current instance of this site
+     *
+     * @return SiteInstance the current instance of this site.
+     */
+    public function getInstance()
+    {
+        return $this->instance;
+    }
 
-	// }}}
-	// {{{ public function getId()
+    // }}}
+    // {{{ public function getId()
 
-	/**
-	 * Helper method to get the id of the current instance
-	 *
-	 * @return integer the current instance id or null if no instance exists.
-	 */
-	public function getId()
-	{
-		$id = null;
-		if ($this->instance !== null)
-			$id = $this->instance->id;
+    /**
+     * Helper method to get the id of the current instance
+     *
+     * @return integer the current instance id or null if no instance exists.
+     */
+    public function getId()
+    {
+        $id = null;
+        if ($this->instance !== null) {
+            $id = $this->instance->id;
+        }
 
-		return $id;
-	}
+        return $id;
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

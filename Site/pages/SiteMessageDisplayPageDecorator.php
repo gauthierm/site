@@ -10,57 +10,57 @@
  */
 class SiteMessageDisplayPageDecorator extends SitePageDecorator
 {
-	// {{{ protected properties
+    // {{{ protected properties
 
-	protected $message_display;
+    protected $message_display;
 
-	// }}}
+    // }}}
 
-	// init phase
-	// {{{ public function init()
+    // init phase
+    // {{{ public function init()
 
-	public function init()
-	{
-		parent::init();
+    public function init()
+    {
+        parent::init();
 
-		$this->message_display = new SwatMessageDisplay();
-	}
+        $this->message_display = new SwatMessageDisplay();
+    }
 
-	// }}}
+    // }}}
 
-	// build phase
-	// {{{ public function build()
+    // build phase
+    // {{{ public function build()
 
-	public function build()
-	{
-		parent::build();
+    public function build()
+    {
+        parent::build();
 
-		foreach ($this->app->messages->getAll() as $message)
-			$this->message_display->add($message);
+        foreach ($this->app->messages->getAll() as $message) {
+            $this->message_display->add($message);
+        }
 
-		if ($this->message_display->getMessageCount() > 0) {
-			$this->layout->startCapture('content', true);
-			$this->message_display->display();
-			$this->layout->endCapture();
-		}
-	}
+        if ($this->message_display->getMessageCount() > 0) {
+            $this->layout->startCapture('content', true);
+            $this->message_display->display();
+            $this->layout->endCapture();
+        }
+    }
 
-	// }}}
+    // }}}
 
-	// finalize phase
-	// {{{ public function finalize()
+    // finalize phase
+    // {{{ public function finalize()
 
-	public function finalize()
-	{
-		parent::finalize();
+    public function finalize()
+    {
+        parent::finalize();
 
-		if ($this->message_display->getMessageCount() > 0) {
-			$this->layout->addHtmlHeadEntrySet(
-				$this->message_display->getHtmlHeadEntrySet());
-		}
-	}
+        if ($this->message_display->getMessageCount() > 0) {
+            $this->layout->addHtmlHeadEntrySet(
+                $this->message_display->getHtmlHeadEntrySet()
+            );
+        }
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

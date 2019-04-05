@@ -9,28 +9,26 @@
  */
 interface SiteTemplateInterface
 {
-	// {{{ public function display()
+    // {{{ public function display()
 
-	/**
-	 * Displays this template
-	 *
-	 * @param SiteLayoutData $data the layoput data to use.
-	 */
-	public function display(SiteLayoutData $data);
+    /**
+     * Displays this template
+     *
+     * @param SiteLayoutData $data the layoput data to use.
+     */
+    public function display(SiteLayoutData $data);
 
-	// }}}
-	// {{{ public function asString()
+    // }}}
+    // {{{ public function asString()
 
-	/**
-	 * Gets this template rendered as a string
-	 *
-	 * @param SiteLayoutData $data the layoput data to use.
-	 *
-	 * @return string this template rendered as a string.
-	 */
-	public function asString(SiteLayoutData $data);
+    /**
+     * Gets this template rendered as a string
+     *
+     * @param SiteLayoutData $data the layoput data to use.
+     *
+     * @return string this template rendered as a string.
+     */
+    public function asString(SiteLayoutData $data);
 
-	// }}}
+    // }}}
 }
-
-?>

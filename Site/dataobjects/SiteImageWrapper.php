@@ -14,154 +14,161 @@
  */
 class SiteImageWrapper extends SwatDBRecordsetWrapper
 {
-	// {{{ protected properties
+    // {{{ protected properties
 
-	/**
-	 * @var string
-	 */
-	protected $binding_table = 'ImageDimensionBinding';
+    /**
+     * @var string
+     */
+    protected $binding_table = 'ImageDimensionBinding';
 
-	/**
-	 * @var string
-	 */
-	protected $binding_table_image_field = 'image';
+    /**
+     * @var string
+     */
+    protected $binding_table_image_field = 'image';
 
-	// }}}
-	// {{{ public function initializeFromResultSet()
+    // }}}
+    // {{{ public function initializeFromResultSet()
 
-	public function initializeFromResultSet(MDB2_Result_Common $rs)
-	{
-		parent::initializeFromResultSet($rs);
+    public function initializeFromResultSet(MDB2_Result_Common $rs)
+    {
+        parent::initializeFromResultSet($rs);
 
-		// automatically load bindings unless lazy_load is set to true
-		if (!$this->getOption('lazy_load')) {
-			$this->loadDimensionBindings();
-		}
-	}
+        // automatically load bindings unless lazy_load is set to true
+        if (!$this->getOption('lazy_load')) {
+            $this->loadDimensionBindings();
+        }
+    }
 
-	// }}}
-	// {{{ public function loadDimensionBindings()
+    // }}}
+    // {{{ public function loadDimensionBindings()
 
-	/**
-	 * Efficiently loads image dimension bindings for the images in this
-	 * recordset
-	 *
-	 * Note: SiteImageWrapper automatically loads dimension bindings when
-	 *       constructed from a database result. This method is most useful
-	 *       when manually adding images to a recordset, or when using the
-	 *       <kbd>lazy_load</kbd> option.
-	 *
-	 * @param string|array $dimensions optional. A string or array of dimension
-	 *                                 shortnames to include. To include all
-	 *                                 dimensions use null. If not specified,
-	 *                                 all dimensions are included.
-	 */
-	public function loadDimensionBindings($dimensions = null)
-	{
-		if (is_string($dimensions)) {
-			$dimensions = array($dimensions);
-		}
+    /**
+     * Efficiently loads image dimension bindings for the images in this
+     * recordset
+     *
+     * Note: SiteImageWrapper automatically loads dimension bindings when
+     *       constructed from a database result. This method is most useful
+     *       when manually adding images to a recordset, or when using the
+     *       <kbd>lazy_load</kbd> option.
+     *
+     * @param string|array $dimensions optional. A string or array of dimension
+     *                                 shortnames to include. To include all
+     *                                 dimensions use null. If not specified,
+     *                                 all dimensions are included.
+     */
+    public function loadDimensionBindings($dimensions = null)
+    {
+        if (is_string($dimensions)) {
+            $dimensions = array($dimensions);
+        }
 
-		if ($this->getCount() > 0 &&
-			($dimensions === null || count($dimensions) > 0)) {
+        if (
+            $this->getCount() > 0 &&
+            ($dimensions === null || count($dimensions) > 0)
+        ) {
+            $image_ids = array();
+            foreach ($this->getArray() as $image) {
+                $image_ids[] = $this->db->quote($image->id, 'integer');
+            }
 
-			$image_ids = array();
-			foreach ($this->getArray() as $image)
-				$image_ids[] = $this->db->quote($image->id, 'integer');
+            $sql = $this->getDimensionQuery($image_ids, $dimensions);
+            $wrapper_class = $this->getImageDimensionBindingWrapperClassName();
+            $bindings = SwatDB::query($this->db, $sql, $wrapper_class);
 
-			$sql = $this->getDimensionQuery($image_ids, $dimensions);
-			$wrapper_class = $this->getImageDimensionBindingWrapperClassName();
-			$bindings = SwatDB::query($this->db, $sql, $wrapper_class);
+            if (count($bindings) == 0) {
+                return;
+            }
 
-			if (count($bindings) == 0)
-				return;
+            $last_image = null;
+            foreach ($bindings as $binding) {
+                $field = $this->binding_table_image_field;
 
-			$last_image = null;
-			foreach ($bindings as $binding) {
-				$field = $this->binding_table_image_field;
+                if (
+                    $last_image === null ||
+                    $last_image->id !== $binding->$field
+                ) {
+                    if ($last_image !== null) {
+                        $wrapper->reindex();
+                        $last_image->dimension_bindings = $wrapper;
+                    }
 
-				if ($last_image === null ||
-					$last_image->id !== $binding->$field) {
+                    $last_image = $this->getByIndex($binding->$field);
+                    $wrapper = new $wrapper_class();
+                }
 
-					if ($last_image !== null) {
-						$wrapper->reindex();
-						$last_image->dimension_bindings = $wrapper;
-					}
+                $wrapper->add($binding);
+            }
 
-					$last_image = $this->getByIndex($binding->$field);
-					$wrapper = new $wrapper_class();
-				}
+            $wrapper->reindex();
+            $last_image->dimension_bindings = $wrapper;
+        }
+    }
 
-				$wrapper->add($binding);
-			}
+    // }}}
+    // {{{ protected function init()
 
-			$wrapper->reindex();
-			$last_image->dimension_bindings = $wrapper;
-		}
-	}
+    protected function init()
+    {
+        parent::init();
+        $this->row_wrapper_class = SwatDBClassMap::get('SiteImage');
+        $this->index_field = 'id';
+    }
 
-	// }}}
-	// {{{ protected function init()
+    // }}}
+    // {{{ protected function getImageDimensionBindingWrapperClassName()
 
-	protected function init()
-	{
-		parent::init();
-		$this->row_wrapper_class = SwatDBClassMap::get('SiteImage');
-		$this->index_field = 'id';
-	}
+    protected function getImageDimensionBindingWrapperClassName()
+    {
+        return SwatDBClassMap::get('SiteImageDimensionBindingWrapper');
+    }
 
-	// }}}
-	// {{{ protected function getImageDimensionBindingWrapperClassName()
+    // }}}
+    // {{{ protected function getDimensionQuery()
 
-	protected function getImageDimensionBindingWrapperClassName()
-	{
-		return SwatDBClassMap::get('SiteImageDimensionBindingWrapper');
-	}
+    protected function getDimensionQuery($image_ids, array $dimensions = null)
+    {
+        if ($dimensions === null) {
+            $dimension_sql = '';
+        } else {
+            $dimension_shortnames = $dimensions;
+            foreach ($dimension_shortnames as &$shortname) {
+                $shortname = $this->db->quote($shortname, 'text');
+            }
 
-	// }}}
-	// {{{ protected function getDimensionQuery()
-
-	protected function getDimensionQuery($image_ids, array $dimensions = null)
-	{
-		if ($dimensions === null) {
-			$dimension_sql = '';
-		} else {
-			$dimension_shortnames = $dimensions;
-			foreach ($dimension_shortnames as &$shortname)
-				$shortname = $this->db->quote($shortname, 'text');
-
-			$dimension_sql = sprintf('and %s.dimension in (
+            $dimension_sql = sprintf(
+                'and %s.dimension in (
 				select id from ImageDimension where shortname in (%s))',
-				$this->binding_table,
-				implode(', ', $dimension_shortnames));
-		}
+                $this->binding_table,
+                implode(', ', $dimension_shortnames)
+            );
+        }
 
-		$sql = sprintf('select %1$s.*
+        $sql = sprintf(
+            'select %1$s.*
 			from %1$s
 			where %1$s.%2$s in (%3$s) %4$s
 			order by %2$s',
-			$this->binding_table,
-			$this->binding_table_image_field,
-			implode(',', $image_ids),
-			$dimension_sql);
+            $this->binding_table,
+            $this->binding_table_image_field,
+            implode(',', $image_ids),
+            $dimension_sql
+        );
 
-		return $sql;
-	}
+        return $sql;
+    }
 
-	// }}}
+    // }}}
 
-	// deprecated
-	// {{{ public function loadDimensions()
+    // deprecated
+    // {{{ public function loadDimensions()
 
-	/**
-	 * @deprecated Use {@link SiteImageWrapper::loadDimensionBindings()}.
-	 */
-	public function loadDimensions(array $dimensions = null)
-	{
-		$this->loadDimensionBindings($dimensions);
-	}
+    /**
+     * @deprecated Use {@link SiteImageWrapper::loadDimensionBindings()}.
+     */
+    public function loadDimensions(array $dimensions = null)
+    {
+        $this->loadDimensionBindings($dimensions);
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

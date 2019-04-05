@@ -10,17 +10,16 @@
  */
 class SiteVideoMediaEncodingWrapper extends SiteMediaEncodingWrapper
 {
-	// {{{ protected function init()
+    // {{{ protected function init()
 
-	protected function init()
-	{
-		parent::init();
+    protected function init()
+    {
+        parent::init();
 
-		$this->row_wrapper_class =
-			SwatDBClassMap::get('SiteVideoMediaEncoding');
-	}
+        $this->row_wrapper_class = SwatDBClassMap::get(
+            'SiteVideoMediaEncoding'
+        );
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

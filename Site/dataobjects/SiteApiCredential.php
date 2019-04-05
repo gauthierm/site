@@ -9,107 +9,106 @@
  */
 class SiteApiCredential extends SwatDBDataObject
 {
-	// {{{ public properties
+    // {{{ public properties
 
-	/**
-	 * The unique identifier of this credential
-	 *
-	 * @var integer
-	 */
-	public $id;
+    /**
+     * The unique identifier of this credential
+     *
+     * @var integer
+     */
+    public $id;
 
-	/**
-	 * The title of the owner of the credentials
-	 *
-	 * @var string
-	 */
-	public $title;
+    /**
+     * The title of the owner of the credentials
+     *
+     * @var string
+     */
+    public $title;
 
-	/**
-	 * @var string
-	 */
-	public $api_key;
+    /**
+     * @var string
+     */
+    public $api_key;
 
-	/**
-	 * @var string
-	 */
-	public $api_shared_secret;
+    /**
+     * @var string
+     */
+    public $api_shared_secret;
 
-	/**
-	 * The date that these credentials were created
-	 *
-	 * @var SwatDate
-	 */
-	public $createdate;
+    /**
+     * The date that these credentials were created
+     *
+     * @var SwatDate
+     */
+    public $createdate;
 
-	// }}}
-	// {{{ public function loadByApiKey()
+    // }}}
+    // {{{ public function loadByApiKey()
 
-	public function loadByApiKey($key, SiteInstance $instance =  null)
-	{
-		$this->checkDB();
+    public function loadByApiKey($key, SiteInstance $instance = null)
+    {
+        $this->checkDB();
 
-		$row = null;
+        $row = null;
 
-		if ($this->table !== null) {
-			$sql = sprintf(
-				'select * from %s where api_key = %s',
-				$this->table,
-				$this->db->quote($key, 'text')
-			);
+        if ($this->table !== null) {
+            $sql = sprintf(
+                'select * from %s where api_key = %s',
+                $this->table,
+                $this->db->quote($key, 'text')
+            );
 
-			if ($instance instanceof SiteInstance) {
-				$sql = sprintf(
-					'%s and instance = %s',
-					$sql,
-					$this->db->quote($instance->id, 'integer')
-				);
-			}
+            if ($instance instanceof SiteInstance) {
+                $sql = sprintf(
+                    '%s and instance = %s',
+                    $sql,
+                    $this->db->quote($instance->id, 'integer')
+                );
+            }
 
-			$rs = SwatDB::query($this->db, $sql, null);
-			$row = $rs->fetchRow(MDB2_FETCHMODE_ASSOC);
-		}
+            $rs = SwatDB::query($this->db, $sql, null);
+            $row = $rs->fetchRow(MDB2_FETCHMODE_ASSOC);
+        }
 
-		if ($row === null)
-			return false;
+        if ($row === null) {
+            return false;
+        }
 
-		$this->initFromRow($row);
-		$this->generatePropertyHashes();
+        $this->initFromRow($row);
+        $this->generatePropertyHashes();
 
-		return true;
-	}
+        return true;
+    }
 
-	// }}}
-	// {{{ protected function init()
+    // }}}
+    // {{{ protected function init()
 
-	protected function init()
-	{
-		$this->table = 'ApiCredential';
-		$this->id_field = 'integer:id';
-		$this->registerDateProperty('createdate');
+    protected function init()
+    {
+        $this->table = 'ApiCredential';
+        $this->id_field = 'integer:id';
+        $this->registerDateProperty('createdate');
 
-		$this->registerInternalProperty(
-			'instance',
-			SwatDBClassMap::get('SiteInstance')
-		);
-	}
+        $this->registerInternalProperty(
+            'instance',
+            SwatDBClassMap::get('SiteInstance')
+        );
+    }
 
-	// }}}
+    // }}}
 
-	// saver methods
-	// {{{ protected function saveInternal()
+    // saver methods
+    // {{{ protected function saveInternal()
 
-	protected function saveInternal()
-	{
-		if ($this->id === null) {
-			$this->createdate = new SwatDate();
-			$this->createdate->toUTC();
-		}
+    protected function saveInternal()
+    {
+        if ($this->id === null) {
+            $this->createdate = new SwatDate();
+            $this->createdate->toUTC();
+        }
 
-		parent::saveInternal();
-	}
+        parent::saveInternal();
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

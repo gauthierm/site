@@ -9,26 +9,24 @@
  */
 interface SiteCommentable extends SiteCommentStatus, SwatDBRecordable
 {
-	// {{{ public function addComment()
+    // {{{ public function addComment()
 
-	/**
-	 * Adds a new comment to this object
-	 *
-	 * @param SiteComment $comment the comment to add.
-	 */
-	public function addComment(SiteComment $comment);
+    /**
+     * Adds a new comment to this object
+     *
+     * @param SiteComment $comment the comment to add.
+     */
+    public function addComment(SiteComment $comment);
 
-	// }}}
-	// {{{ public function getTitle()
+    // }}}
+    // {{{ public function getTitle()
 
-	/**
-	 * Gets the title of this object
-	 *
-	 * @return string the title of this object.
-	 */
-	public function getTitle();
+    /**
+     * Gets the title of this object
+     *
+     * @return string the title of this object.
+     */
+    public function getTitle();
 
-	// }}}
+    // }}}
 }
-
-?>

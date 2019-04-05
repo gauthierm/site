@@ -9,23 +9,21 @@
  */
 class SiteVideoMediaEncodingBinding extends SiteMediaEncodingBinding
 {
-	// {{{ public properties
+    // {{{ public properties
 
-	/**
-	 * Width
-	 *
-	 * @var integer
-	 */
-	public $width;
+    /**
+     * Width
+     *
+     * @var integer
+     */
+    public $width;
 
-	/**
-	 * Height
-	 *
-	 * @var integer
-	 */
-	public $height;
+    /**
+     * Height
+     *
+     * @var integer
+     */
+    public $height;
 
-	// }}}
+    // }}}
 }
-
-?>

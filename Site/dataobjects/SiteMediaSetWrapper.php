@@ -14,54 +14,51 @@
  */
 class SiteMediaSetWrapper extends SwatDBRecordsetWrapper
 {
-	// {{{ public function initializeFromResultSet()
+    // {{{ public function initializeFromResultSet()
 
-	public function initializeFromResultSet(MDB2_Result_Common $rs)
-	{
-		parent::initializeFromResultSet($rs);
+    public function initializeFromResultSet(MDB2_Result_Common $rs)
+    {
+        parent::initializeFromResultSet($rs);
 
-		if (!$this->getOption('lazy_load')) {
-			$this->loadAllSubRecordsets(
-				'encodings',
-				$this->getMediaEncodingWrapperClass(),
-				'MediaEncoding',
-				'media_set',
-				'',
-				$this->getMediaEncodingOrderBy()
-			);
-		}
-	}
+        if (!$this->getOption('lazy_load')) {
+            $this->loadAllSubRecordsets(
+                'encodings',
+                $this->getMediaEncodingWrapperClass(),
+                'MediaEncoding',
+                'media_set',
+                '',
+                $this->getMediaEncodingOrderBy()
+            );
+        }
+    }
 
-	// }}}
-	// {{{ protected function getMediaEncodingWrapperClass()
+    // }}}
+    // {{{ protected function getMediaEncodingWrapperClass()
 
-	protected function getMediaEncodingWrapperClass()
-	{
-		return SwatDBClassMap::get('SiteMediaEncodingWrapper');
-	}
+    protected function getMediaEncodingWrapperClass()
+    {
+        return SwatDBClassMap::get('SiteMediaEncodingWrapper');
+    }
 
-	// }}}
-	// {{{ protected function getMediaEncodingOrderBy()
+    // }}}
+    // {{{ protected function getMediaEncodingOrderBy()
 
-	protected function getMediaEncodingOrderBy()
-	{
-		return 'media_set';
-	}
+    protected function getMediaEncodingOrderBy()
+    {
+        return 'media_set';
+    }
 
-	// }}}
-	// {{{ protected function init()
+    // }}}
+    // {{{ protected function init()
 
-	protected function init()
-	{
-		parent::init();
+    protected function init()
+    {
+        parent::init();
 
-		$this->row_wrapper_class =
-			SwatDBClassMap::get('SiteMediaSet');
+        $this->row_wrapper_class = SwatDBClassMap::get('SiteMediaSet');
 
-		$this->index_field = 'id';
-	}
+        $this->index_field = 'id';
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

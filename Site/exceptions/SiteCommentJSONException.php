@@ -8,5 +8,3 @@
 class SiteCommentJSONException extends SiteException
 {
 }
-
-?>

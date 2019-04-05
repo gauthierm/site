@@ -10,17 +10,15 @@
  */
 class SiteCdnTaskWrapper extends SwatDBRecordsetWrapper
 {
-	// {{{ protected function init()
+    // {{{ protected function init()
 
-	protected function init()
-	{
-		parent::init();
+    protected function init()
+    {
+        parent::init();
 
-		$this->row_wrapper_class = SwatDBClassMap::get('SiteCdnTask');
-		$this->index_field = 'id';
-	}
+        $this->row_wrapper_class = SwatDBClassMap::get('SiteCdnTask');
+        $this->index_field = 'id';
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

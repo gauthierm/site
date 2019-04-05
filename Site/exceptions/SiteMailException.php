@@ -10,5 +10,3 @@
 class SiteMailException extends SiteException
 {
 }
-
-?>

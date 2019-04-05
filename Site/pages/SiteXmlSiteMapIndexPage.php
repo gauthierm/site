@@ -10,51 +10,51 @@
  */
 abstract class SiteXmlSiteMapIndexPage extends SitePageDecorator
 {
-	// {{{ public function __construct()
+    // {{{ public function __construct()
 
-	public function __construct(SiteAbstractPage $page)
-	{
-		parent::__construct($page);
-		$this->setLayout(new SiteXmlSiteMapLayout($this->app));
-	}
+    public function __construct(SiteAbstractPage $page)
+    {
+        parent::__construct($page);
+        $this->setLayout(new SiteXmlSiteMapLayout($this->app));
+    }
 
-	// }}}
-	// {{{ public function build()
+    // }}}
+    // {{{ public function build()
 
-	public function build()
-	{
-		$this->layout->startCapture('site_map');
+    public function build()
+    {
+        $this->layout->startCapture('site_map');
 
-		echo '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
-		$this->displaySiteMapIndex();
-		echo '</sitemapindex>';
+        echo '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+        $this->displaySiteMapIndex();
+        echo '</sitemapindex>';
 
-		$this->layout->endCapture();
-	}
+        $this->layout->endCapture();
+    }
 
-	// }}}
-	// {{{ protected function displayIndex()
+    // }}}
+    // {{{ protected function displayIndex()
 
-	protected function displayIndex($path, SwatDate $last_modified = null)
-	{
-		echo "<sitemap>\n";
+    protected function displayIndex($path, SwatDate $last_modified = null)
+    {
+        echo "<sitemap>\n";
 
-		printf("<loc>%s</loc>\n",
-			htmlspecialchars($this->app->getBaseHref().$path));
+        printf(
+            "<loc>%s</loc>\n",
+            htmlspecialchars($this->app->getBaseHref() . $path)
+        );
 
-		if ($last_modified !== null)
-			printf("<lastmod>%s</lastmod>\n",
-				$last_modified->getISO8601());
+        if ($last_modified !== null) {
+            printf("<lastmod>%s</lastmod>\n", $last_modified->getISO8601());
+        }
 
-		echo "</sitemap>\n";
-	}
+        echo "</sitemap>\n";
+    }
 
-	// }}}
-	// {{{ abstract protected function displaySiteMapIndex()
+    // }}}
+    // {{{ abstract protected function displaySiteMapIndex()
 
-	abstract protected function displaySiteMapIndex();
+    abstract protected function displaySiteMapIndex();
 
-	// }}}
+    // }}}
 }
-
-?>

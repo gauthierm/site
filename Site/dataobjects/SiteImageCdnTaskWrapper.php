@@ -10,16 +10,14 @@
  */
 class SiteImageCdnTaskWrapper extends SiteCdnTaskWrapper
 {
-	// {{{ protected function init()
+    // {{{ protected function init()
 
-	protected function init()
-	{
-		parent::init();
+    protected function init()
+    {
+        parent::init();
 
-		$this->row_wrapper_class = SwatDBClassMap::get('SiteImageCdnTask');
-	}
+        $this->row_wrapper_class = SwatDBClassMap::get('SiteImageCdnTask');
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

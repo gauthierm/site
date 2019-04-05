@@ -10,5 +10,3 @@
 class SiteApiSignOnException extends SwatException
 {
 }
-
-?>

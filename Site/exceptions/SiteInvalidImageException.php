@@ -10,5 +10,3 @@
 class SiteInvalidImageException extends SiteException
 {
 }
-
-?>

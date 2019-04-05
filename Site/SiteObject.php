@@ -10,5 +10,3 @@
 class SiteObject extends SwatObject
 {
 }
-
-?>

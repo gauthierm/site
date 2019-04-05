@@ -10,16 +10,14 @@
  */
 class SiteContactMessageWrapper extends SwatDBRecordsetWrapper
 {
-	// {{{ protected function init()
+    // {{{ protected function init()
 
-	protected function init()
-	{
-		parent::init();
-		$this->row_wrapper_class = SwatDBClassMap::get('SiteContactMessage');
-		$this->index_field = 'id';
-	}
+    protected function init()
+    {
+        parent::init();
+        $this->row_wrapper_class = SwatDBClassMap::get('SiteContactMessage');
+        $this->index_field = 'id';
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

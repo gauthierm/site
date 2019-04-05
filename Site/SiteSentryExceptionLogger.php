@@ -9,46 +9,44 @@
  */
 class SiteSentryExceptionLogger extends SiteExceptionLogger
 {
-	// {{{ protected properties
+    // {{{ protected properties
 
-	/**
-	 * Client that is used to send exception details to sentry
-	 *
-	 * Instantiated with dsn elsewhere and then provided in construct
-	 *
-	 * @var Raven_Client
-	 */
-	protected $client;
+    /**
+     * Client that is used to send exception details to sentry
+     *
+     * Instantiated with dsn elsewhere and then provided in construct
+     *
+     * @var Raven_Client
+     */
+    protected $client;
 
-	// }}}
-	// {{{ public function __construct()
+    // }}}
+    // {{{ public function __construct()
 
-	/**
-	 * Creates a new sentry exception loggger
-	 *
-	 * @param Raven_Client $client the sentry client to use
-	 */
-	public function __construct(Raven_Client $client)
-	{
-		$this->client = $client;
-	}
+    /**
+     * Creates a new sentry exception loggger
+     *
+     * @param Raven_Client $client the sentry client to use
+     */
+    public function __construct(Raven_Client $client)
+    {
+        $this->client = $client;
+    }
 
-	// }}}
-	// {{{ public function log()
+    // }}}
+    // {{{ public function log()
 
-	/**
-	 * Logs an exception
-	 *
-	 * @param SwatException $e the exception to log
-	 */
-	public function log(SwatException $e)
-	{
-		if (!$e instanceof SiteNotFoundException) {
-			$this->client->captureException($e);
-		}
-	}
+    /**
+     * Logs an exception
+     *
+     * @param SwatException $e the exception to log
+     */
+    public function log(SwatException $e)
+    {
+        if (!$e instanceof SiteNotFoundException) {
+            $this->client->captureException($e);
+        }
+    }
 
-	//}}}
+    //}}}
 }
-
-?>

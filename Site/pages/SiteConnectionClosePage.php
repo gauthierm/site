@@ -13,23 +13,21 @@
  */
 class SiteConnectionClosePage extends SitePage
 {
-	// {{{ protected function createLayout()
+    // {{{ protected function createLayout()
 
-	protected function createLayout()
-	{
-		return new SiteLayout($this->app, SiteBlankTemplate::class);
-	}
+    protected function createLayout()
+    {
+        return new SiteLayout($this->app, SiteBlankTemplate::class);
+    }
 
-	// }}}
-	// {{{ public function init()
+    // }}}
+    // {{{ public function init()
 
-	public function init()
-	{
-		parent::init();
-		header('Connection: close');
-	}
+    public function init()
+    {
+        parent::init();
+        header('Connection: close');
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

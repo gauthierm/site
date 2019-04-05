@@ -11,31 +11,30 @@
  */
 class SiteKeywordEntry extends SwatEntry
 {
-	// {{{ public properties
+    // {{{ public properties
 
-	/**
-	 * The name of this keyword entry widget
-	 *
-	 * The name is used as the XHTML form element name. It will be displayed
-	 * in the URI if the parent form is set to use HTTP GET.
-	 *
-	 * @var string
-	 */
-	public $name;
+    /**
+     * The name of this keyword entry widget
+     *
+     * The name is used as the XHTML form element name. It will be displayed
+     * in the URI if the parent form is set to use HTTP GET.
+     *
+     * @var string
+     */
+    public $name;
 
-	// }}}
-	// {{{ protected function getInputTag()
+    // }}}
+    // {{{ protected function getInputTag()
 
-	protected function getInputTag()
-	{
-		$tag = parent::getInputTag();
-		if ($this->name !== null)
-			$tag->name = $this->name;
+    protected function getInputTag()
+    {
+        $tag = parent::getInputTag();
+        if ($this->name !== null) {
+            $tag->name = $this->name;
+        }
 
-		return $tag;
-	}
+        return $tag;
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

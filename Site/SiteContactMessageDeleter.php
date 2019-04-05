@@ -11,97 +11,111 @@
  */
 class SiteContactMessageDeleter extends SitePrivateDataDeleter
 {
-	// {{{ public function run()
+    // {{{ public function run()
 
-	public function run()
-	{
-		$this->app->debug("\n".Site::_('Contact Messages')."\n--------\n");
+    public function run()
+    {
+        $this->app->debug("\n" . Site::_('Contact Messages') . "\n--------\n");
 
-		$total = $this->getTotal();
-		if ($total == 0) {
-			$this->app->debug(
-				Site::_('No expired contact messages found.')."\n");
-		} else {
-			$this->app->debug(sprintf(
-				Site::_('Found %s contact messages for deletion...')."\n",
-				$total));
+        $total = $this->getTotal();
+        if ($total == 0) {
+            $this->app->debug(
+                Site::_('No expired contact messages found.') . "\n"
+            );
+        } else {
+            $this->app->debug(
+                sprintf(
+                    Site::_('Found %s contact messages for deletion...') . "\n",
+                    $total
+                )
+            );
 
-			if (!$this->app->isDryRun()) {
-				$delete_count = $this->deleteContactMessages();
-				$this->app->debug(sprintf(' '.Site::_('%s deleted.')."\n",
-					$delete_count));
-			} else {
-				$this->app->debug(' '.
-					Site::_('=> not deleting because dry-run is on'));
-			}
+            if (!$this->app->isDryRun()) {
+                $delete_count = $this->deleteContactMessages();
+                $this->app->debug(
+                    sprintf(' ' . Site::_('%s deleted.') . "\n", $delete_count)
+                );
+            } else {
+                $this->app->debug(
+                    ' ' . Site::_('=> not deleting because dry-run is on')
+                );
+            }
 
-			$this->app->debug("\n".
-				Site::_('Finished deleting expired contact messages.')."\n");
-		}
-	}
+            $this->app->debug(
+                "\n" .
+                    Site::_('Finished deleting expired contact messages.') .
+                    "\n"
+            );
+        }
+    }
 
-	// }}}
-	// {{{ protected function deleteContactMessages()
+    // }}}
+    // {{{ protected function deleteContactMessages()
 
-	/**
-	 * Deletes all expired contact messages
-	 */
-	protected function deleteContactMessages()
-	{
-		$sql = sprintf('delete from ContactMessage %s',
-			$this->getWhereClause());
+    /**
+     * Deletes all expired contact messages
+     */
+    protected function deleteContactMessages()
+    {
+        $sql = sprintf(
+            'delete from ContactMessage %s',
+            $this->getWhereClause()
+        );
 
-		return SwatDB::exec($this->app->db, $sql);
-	}
+        return SwatDB::exec($this->app->db, $sql);
+    }
 
-	// }}}
-	// {{{ protected function getTotal()
+    // }}}
+    // {{{ protected function getTotal()
 
-	protected function getTotal()
-	{
-		$sql = sprintf('select count(id) from ContactMessage %s',
-			$this->getWhereClause());
+    protected function getTotal()
+    {
+        $sql = sprintf(
+            'select count(id) from ContactMessage %s',
+            $this->getWhereClause()
+        );
 
-		return SwatDB::queryOne($this->app->db, $sql);
-	}
+        return SwatDB::queryOne($this->app->db, $sql);
+    }
 
-	// }}}
-	// {{{ protected function getExpiryDate()
+    // }}}
+    // {{{ protected function getExpiryDate()
 
-	protected function getExpiryDate()
-	{
-		$unix_time =
-			strtotime('-'.$this->app->config->expiry->contact_messages);
+    protected function getExpiryDate()
+    {
+        $unix_time = strtotime(
+            '-' . $this->app->config->expiry->contact_messages
+        );
 
-		$expiry_date = new SwatDate();
-		$expiry_date->setTimestamp($unix_time);
-		$expiry_date->toUTC();
+        $expiry_date = new SwatDate();
+        $expiry_date->setTimestamp($unix_time);
+        $expiry_date->toUTC();
 
-		return $expiry_date;
-	}
+        return $expiry_date;
+    }
 
-	// }}}
-	// {{{ protected function getWhereClause()
+    // }}}
+    // {{{ protected function getWhereClause()
 
-	protected function getWhereClause()
-	{
-		$expiry_date = $this->getExpiryDate();
-		$instance_id = $this->app->getInstanceId();
+    protected function getWhereClause()
+    {
+        $expiry_date = $this->getExpiryDate();
+        $instance_id = $this->app->getInstanceId();
 
-		// check expiry from sent_date instead of createdate so that we give a
-		// year from when the contact message would have been received.
-		$sql = 'where sent_date < %s
+        // check expiry from sent_date instead of createdate so that we give a
+        // year from when the contact message would have been received.
+        $sql = 'where sent_date < %s
 			and instance %s %s';
 
-		$sql = sprintf($sql,
-			$this->app->db->quote($expiry_date->getDate(), 'date'),
-			SwatDB::equalityOperator($instance_id),
-			$this->app->db->quote($instance_id, 'integer'));
+        $sql = sprintf(
+            $sql,
+            $this->app->db->quote($expiry_date->getDate(), 'date'),
+            SwatDB::equalityOperator($instance_id),
+            $this->app->db->quote($instance_id, 'integer')
+        );
 
-		return $sql;
-	}
+        return $sql;
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

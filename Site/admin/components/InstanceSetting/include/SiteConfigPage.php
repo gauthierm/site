@@ -10,41 +10,32 @@
  */
 class SiteConfigPage extends SiteAbstractConfigPage
 {
-	// {{{ public function getPageTitle()
+    // {{{ public function getPageTitle()
 
-	public function getPageTitle()
-	{
-		return 'Site Settings';
-	}
+    public function getPageTitle()
+    {
+        return 'Site Settings';
+    }
 
-	// }}}
-	// {{{ public function getConfigSettings()
+    // }}}
+    // {{{ public function getConfigSettings()
 
-	public function getConfigSettings()
-	{
-		return array(
-			'site' => array(
-				'title',
-				'meta_description',
-			),
-			'comment' => array(
-				'akismet_key',
-			),
-			'date' => array(
-				'time_zone',
-			),
-		);
-	}
+    public function getConfigSettings()
+    {
+        return array(
+            'site' => array('title', 'meta_description'),
+            'comment' => array('akismet_key'),
+            'date' => array('time_zone')
+        );
+    }
 
-	// }}}
-	// {{{ protected function getUiXml()
+    // }}}
+    // {{{ protected function getUiXml()
 
-	protected function getUiXml()
-	{
-		return __DIR__.'/config-page.xml';
-	}
+    protected function getUiXml()
+    {
+        return __DIR__ . '/config-page.xml';
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

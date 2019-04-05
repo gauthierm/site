@@ -9,19 +9,18 @@
  */
 class SiteAccountLoginHistoryWrapper extends SwatDBRecordsetWrapper
 {
-	// {{{ protected function init()
+    // {{{ protected function init()
 
-	protected function init()
-	{
-		parent::init();
+    protected function init()
+    {
+        parent::init();
 
-		$this->row_wrapper_class =
-			SwatDBClassMap::get('SiteAccountLoginHistory');
+        $this->row_wrapper_class = SwatDBClassMap::get(
+            'SiteAccountLoginHistory'
+        );
 
-		$this->index_field = 'id';
-	}
+        $this->index_field = 'id';
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

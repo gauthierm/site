@@ -10,121 +10,120 @@
  */
 abstract class SiteMediaCdnMetadataUpdater extends SiteCommandLineApplication
 {
-	// {{{ public properties
+    // {{{ public properties
 
-	/**
-	 * A convenience reference to the database object
-	 *
-	 * @var MDB2_Driver
-	 */
-	public $db;
+    /**
+     * A convenience reference to the database object
+     *
+     * @var MDB2_Driver
+     */
+    public $db;
 
-	// }}}
-	// {{{ public function __construct()
+    // }}}
+    // {{{ public function __construct()
 
-	public function __construct($id, $filename, $title, $documentation)
-	{
-		parent::__construct($id, $filename, $title, $documentation);
+    public function __construct($id, $filename, $title, $documentation)
+    {
+        parent::__construct($id, $filename, $title, $documentation);
 
-		$instance = new SiteCommandLineArgument(array('-i', '--instance'),
-			'setInstance', 'Optional. Sets the site instance for which to '.
-			'run this application.');
+        $instance = new SiteCommandLineArgument(
+            array('-i', '--instance'),
+            'setInstance',
+            'Optional. Sets the site instance for which to ' .
+                'run this application.'
+        );
 
-		$instance->addParameter('string',
-			'instance name must be specified.');
+        $instance->addParameter('string', 'instance name must be specified.');
 
-		$this->addCommandLineArgument($instance);
+        $this->addCommandLineArgument($instance);
 
-		$this->initModules();
-		$this->parseCommandLineArguments();
+        $this->initModules();
+        $this->parseCommandLineArguments();
 
-		$this->locale = SwatI18NLocale::get();
-	}
+        $this->locale = SwatI18NLocale::get();
+    }
 
-	// }}}
-	// {{{ public function setInstance()
+    // }}}
+    // {{{ public function setInstance()
 
-	public function setInstance($shortname)
-	{
-		putenv(sprintf('instance=%s', $shortname));
-		$this->instance->init();
-		$this->config->init();
-	}
+    public function setInstance($shortname)
+    {
+        putenv(sprintf('instance=%s', $shortname));
+        $this->instance->init();
+        $this->config->init();
+    }
 
-	// }}}
-	// {{{ public function run()
+    // }}}
+    // {{{ public function run()
 
-	/**
-	 * Runs this application
-	 */
-	public function run()
-	{
-		$this->lock();
+    /**
+     * Runs this application
+     */
+    public function run()
+    {
+        $this->lock();
 
-		$this->debug("Queuing metadata updates for Media on CDN.\n", true);
+        $this->debug("Queuing metadata updates for Media on CDN.\n", true);
 
-		$this->queueUpdates();
+        $this->queueUpdates();
 
-		$this->debug("All done.\n", true);
+        $this->debug("All done.\n", true);
 
-		$this->unlock();
-	}
+        $this->unlock();
+    }
 
-	// }}}
-	// {{{ abstract protected function queueUpdates()
+    // }}}
+    // {{{ abstract protected function queueUpdates()
 
-	abstract protected function queueUpdates();
+    abstract protected function queueUpdates();
 
-	// }}}
-	// {{{ protected function queueCdnTask()
+    // }}}
+    // {{{ protected function queueCdnTask()
 
-	protected function queueCdnTask(
-		SiteMedia $media,
-		SiteMediaEncoding $encoding
-	) {
-		$class_name = SwatDBClassMap::get('SiteMediaCdnTask');
+    protected function queueCdnTask(
+        SiteMedia $media,
+        SiteMediaEncoding $encoding
+    ) {
+        $class_name = SwatDBClassMap::get('SiteMediaCdnTask');
 
-		$task = new $class_name();
-		$task->setDatabase($this->db);
+        $task = new $class_name();
+        $task->setDatabase($this->db);
 
-		$task->media     = $media;
-		$task->encoding  = $encoding;
-		$task->operation = 'copy';
-		$task->override_http_headers = serialize(array(
-			'Content-Disposition' => sprintf('attachment; filename="%s"',
-				$media->getContentDispositionFilename($encoding->shortname)),
-			));
+        $task->media = $media;
+        $task->encoding = $encoding;
+        $task->operation = 'copy';
+        $task->override_http_headers = serialize(array(
+            'Content-Disposition' => sprintf(
+                'attachment; filename="%s"',
+                $media->getContentDispositionFilename($encoding->shortname)
+            )
+        ));
 
-		$task->save();
-	}
+        $task->save();
+    }
 
-	// }}}
+    // }}}
 
-	// boilerplate code
-	// {{{ protected function getDefaultModuleList()
+    // boilerplate code
+    // {{{ protected function getDefaultModuleList()
 
-	protected function getDefaultModuleList()
-	{
-		return array_merge(
-			parent::getDefaultModuleList(),
-			[
-				'database' => SiteDatabaseModule::class,
-				'instance' => SiteMultipleInstanceModule::class,
-			]
-		);
-	}
+    protected function getDefaultModuleList()
+    {
+        return array_merge(parent::getDefaultModuleList(), [
+            'database' => SiteDatabaseModule::class,
+            'instance' => SiteMultipleInstanceModule::class
+        ]);
+    }
 
-	// }}}
-	// {{{ protected function configure()
+    // }}}
+    // {{{ protected function configure()
 
-	protected function configure(SiteConfigModule $config)
-	{
-		parent::configure($config);
+    protected function configure(SiteConfigModule $config)
+    {
+        parent::configure($config);
 
-		$this->database->dsn = $config->database->dsn;
-	}
+        $this->database->dsn = $config->database->dsn;
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

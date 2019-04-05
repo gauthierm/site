@@ -14,39 +14,37 @@
  */
 class SiteMediaCdnTaskWrapper extends SiteCdnTaskWrapper
 {
-	// {{{ public function initializeFromResultSet()
+    // {{{ public function initializeFromResultSet()
 
-	public function initializeFromResultSet(MDB2_Result_Common $rs)
-	{
-		parent::initializeFromResultSet($rs);
+    public function initializeFromResultSet(MDB2_Result_Common $rs)
+    {
+        parent::initializeFromResultSet($rs);
 
-		if (!$this->getOption('lazy_load')) {
-			$this->loadAllSubDataObjects(
-				'media',
-				$this->db,
-				'select * from Media where id in (%s)',
-				SwatDBClassMap::get('SiteMediaWrapper')
-			);
+        if (!$this->getOption('lazy_load')) {
+            $this->loadAllSubDataObjects(
+                'media',
+                $this->db,
+                'select * from Media where id in (%s)',
+                SwatDBClassMap::get('SiteMediaWrapper')
+            );
 
-			$this->loadAllSubDataObjects(
-				'encoding',
-				$this->db,
-				'select * from MediaEncoding where id in (%s)',
-				SwatDBClassMap::get('SiteMediaEncodingWrapper')
-			);
-		}
-	}
+            $this->loadAllSubDataObjects(
+                'encoding',
+                $this->db,
+                'select * from MediaEncoding where id in (%s)',
+                SwatDBClassMap::get('SiteMediaEncodingWrapper')
+            );
+        }
+    }
 
-	// }}}
-	// {{{ protected function init()
+    // }}}
+    // {{{ protected function init()
 
-	protected function init()
-	{
-		parent::init();
-		$this->row_wrapper_class = SwatDBClassMap::get('SiteMediaCdnTask');
-	}
+    protected function init()
+    {
+        parent::init();
+        $this->row_wrapper_class = SwatDBClassMap::get('SiteMediaCdnTask');
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

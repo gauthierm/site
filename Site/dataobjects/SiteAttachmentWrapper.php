@@ -10,34 +10,32 @@
  */
 class SiteAttachmentWrapper extends SwatDBRecordsetWrapper
 {
-	// {{{ protected function init()
+    // {{{ protected function init()
 
-	protected function init()
-	{
-		parent::init();
+    protected function init()
+    {
+        parent::init();
 
-		$this->row_wrapper_class = SwatDBClassMap::get('SiteAttachment');
-		$this->index_field = 'id';
-	}
+        $this->row_wrapper_class = SwatDBClassMap::get('SiteAttachment');
+        $this->index_field = 'id';
+    }
 
-	// }}}
-	// {{{ public function getBySet()
+    // }}}
+    // {{{ public function getBySet()
 
-	public function getBySet($shortname)
-	{
-		$wrapper_class = SwatDBClassMap::get('SiteAttachmentWrapper');
-		$attachments = new $wrapper_class();
+    public function getBySet($shortname)
+    {
+        $wrapper_class = SwatDBClassMap::get('SiteAttachmentWrapper');
+        $attachments = new $wrapper_class();
 
-		foreach ($this as $attachment) {
-			if ($attachment->attachment_set->shortname === $shortname) {
-				$attachments->add($attachment);
-			}
-		}
+        foreach ($this as $attachment) {
+            if ($attachment->attachment_set->shortname === $shortname) {
+                $attachments->add($attachment);
+            }
+        }
 
-		return $attachments;
-	}
+        return $attachments;
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

@@ -7,16 +7,14 @@
  */
 class SiteSMILTemplate extends SiteAbstractTemplate
 {
-	// {{{ public function display()
+    // {{{ public function display()
 
-	public function display(SiteLayoutData $data)
-	{
-		header('Content-Type: application/smil; charset=utf-8');
+    public function display(SiteLayoutData $data)
+    {
+        header('Content-Type: application/smil; charset=utf-8');
 
-		echo $data->content;
-	}
+        echo $data->content;
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

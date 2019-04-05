@@ -10,5 +10,3 @@
 class SiteCookieException extends SiteException
 {
 }
-
-?>

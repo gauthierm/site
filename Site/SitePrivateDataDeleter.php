@@ -8,21 +8,19 @@
  */
 abstract class SitePrivateDataDeleter extends SwatObject
 {
-	// {{{ public properties
+    // {{{ public properties
 
-	/**
-	 * A reference to the application
-	 *
-	 * @var SitePrivateDataDeleterApplication
-	 */
-	public $app;
+    /**
+     * A reference to the application
+     *
+     * @var SitePrivateDataDeleterApplication
+     */
+    public $app;
 
-	// }}}
-	// {{{ abstract public function run()
+    // }}}
+    // {{{ abstract public function run()
 
-	abstract public function run();
+    abstract public function run();
 
-	// }}}
+    // }}}
 }
-
-?>

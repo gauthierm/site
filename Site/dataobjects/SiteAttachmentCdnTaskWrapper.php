@@ -14,34 +14,32 @@
  */
 class SiteAttachmentCdnTaskWrapper extends SiteCdnTaskWrapper
 {
-	// {{{ public function initializeFromResultSet()
+    // {{{ public function initializeFromResultSet()
 
-	public function initializeFromResultSet(MDB2_Result_Common $rs)
-	{
-		parent::initializeFromResultSet($rs);
+    public function initializeFromResultSet(MDB2_Result_Common $rs)
+    {
+        parent::initializeFromResultSet($rs);
 
-		// automatically load attachments unless lazy_load is set to true
-		if (!$this->getOption('lazy_load')) {
-			$this->loadAllSubDataObjects(
-				'attachment',
-				$this->db,
-				'select * from Attachment where id in (%s)',
-				SwatDBClassMap::get('SiteAttachmentWrapper')
-			);
-		}
-	}
+        // automatically load attachments unless lazy_load is set to true
+        if (!$this->getOption('lazy_load')) {
+            $this->loadAllSubDataObjects(
+                'attachment',
+                $this->db,
+                'select * from Attachment where id in (%s)',
+                SwatDBClassMap::get('SiteAttachmentWrapper')
+            );
+        }
+    }
 
-	// }}}
-	// {{{ protected function init()
+    // }}}
+    // {{{ protected function init()
 
-	protected function init()
-	{
-		parent::init();
+    protected function init()
+    {
+        parent::init();
 
-		$this->row_wrapper_class = SwatDBClassMap::get('SiteAttachmentCdnTask');
-	}
+        $this->row_wrapper_class = SwatDBClassMap::get('SiteAttachmentCdnTask');
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

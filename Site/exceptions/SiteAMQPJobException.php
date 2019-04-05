@@ -10,5 +10,3 @@
 class SiteAMQPJobException extends SiteException
 {
 }
-
-?>

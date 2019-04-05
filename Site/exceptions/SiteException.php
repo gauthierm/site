@@ -9,27 +9,25 @@
  */
 class SiteException extends SwatException
 {
-	// {{{ public properties
+    // {{{ public properties
 
-	public $title = null;
-	public $http_status_code = 500;
+    public $title = null;
+    public $http_status_code = 500;
 
-	// }}}
-	// {{{ public function __construct()
+    // }}}
+    // {{{ public function __construct()
 
-	public function __construct($message = null, $code = 0)
-	{
-		if (is_object($message) && ($message instanceof PEAR_Error)) {
-			$error = $message;
-			$message = $error->getMessage();
-			$message.= "\n".$error->getUserInfo();
-			$code = $error->getCode();
-		}
+    public function __construct($message = null, $code = 0)
+    {
+        if (is_object($message) && $message instanceof PEAR_Error) {
+            $error = $message;
+            $message = $error->getMessage();
+            $message .= "\n" . $error->getUserInfo();
+            $code = $error->getCode();
+        }
 
-		parent::__construct($message, $code);
-	}
+        parent::__construct($message, $code);
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

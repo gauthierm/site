@@ -10,41 +10,41 @@
  */
 class SiteInstanceConfigSetting extends SwatDBDataObject
 {
-	// {{{ public properties
+    // {{{ public properties
 
-	/**
-	 * The qualified name of the config setting
-	 *
-	 * @var string
-	 */
-	public $name;
+    /**
+     * The qualified name of the config setting
+     *
+     * @var string
+     */
+    public $name;
 
-	/**
-	 * The value of the config setting
-	 *
-	 * @var string
-	 */
-	public $value;
+    /**
+     * The value of the config setting
+     *
+     * @var string
+     */
+    public $value;
 
-	/**
-	 * Whether or not this is a default value
-	 *
-	 * @var boolean
-	 */
-	public $is_default;
+    /**
+     * Whether or not this is a default value
+     *
+     * @var boolean
+     */
+    public $is_default;
 
-	// }}}
-	// {{{ protected function init()
+    // }}}
+    // {{{ protected function init()
 
-	protected function init()
-	{
-		$this->table = 'InstanceConfigSetting';
+    protected function init()
+    {
+        $this->table = 'InstanceConfigSetting';
 
-		$this->registerInternalProperty('instance',
-			SwatDBClassMap::get('SiteInstance'));
-	}
+        $this->registerInternalProperty(
+            'instance',
+            SwatDBClassMap::get('SiteInstance')
+        );
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

@@ -10,25 +10,23 @@
  */
 class SiteImageDimensionBindingWrapper extends SwatDBRecordsetWrapper
 {
-	// {{{ protected function init()
+    // {{{ protected function init()
 
-	protected function init()
-	{
-		parent::init();
+    protected function init()
+    {
+        parent::init();
 
-		$this->index_field = 'dimension';
-		$this->row_wrapper_class = $this->getImageDimensionBindingClassName();
-	}
+        $this->index_field = 'dimension';
+        $this->row_wrapper_class = $this->getImageDimensionBindingClassName();
+    }
 
-	// }}}
-	// {{{ protected function getImageDimensionBindingClassName()
+    // }}}
+    // {{{ protected function getImageDimensionBindingClassName()
 
-	protected function getImageDimensionBindingClassName()
-	{
-		return SwatDBClassMap::get('SiteImageDimensionBinding');
-	}
+    protected function getImageDimensionBindingClassName()
+    {
+        return SwatDBClassMap::get('SiteImageDimensionBinding');
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

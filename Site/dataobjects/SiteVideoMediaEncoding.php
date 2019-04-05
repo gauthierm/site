@@ -9,27 +9,27 @@
  */
 class SiteVideoMediaEncoding extends SiteMediaEncoding
 {
-	// {{{ public properties
+    // {{{ public properties
 
-	/**
-	 * Width in pixels
-	 *
-	 * @var integer
-	 */
-	public $width;
+    /**
+     * Width in pixels
+     *
+     * @var integer
+     */
+    public $width;
 
-	// }}}
-	// {{{ protected function init()
+    // }}}
+    // {{{ protected function init()
 
-	protected function init()
-	{
-		parent::init();
+    protected function init()
+    {
+        parent::init();
 
-		$this->registerInternalProperty('media_set',
-			SwatDBClassMap::get('SiteVideoMediaSet'));
-	}
+        $this->registerInternalProperty(
+            'media_set',
+            SwatDBClassMap::get('SiteVideoMediaSet')
+        );
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

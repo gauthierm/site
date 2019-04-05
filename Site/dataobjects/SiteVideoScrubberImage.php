@@ -9,16 +9,14 @@
  */
 class SiteVideoScrubberImage extends SiteImage
 {
-	// {{{ protected function init()
+    // {{{ protected function init()
 
-	protected function init()
-	{
-		parent::init();
+    protected function init()
+    {
+        parent::init();
 
-		$this->image_set_shortname = 'video-scrubber';
-	}
+        $this->image_set_shortname = 'video-scrubber';
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

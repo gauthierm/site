@@ -7,11 +7,11 @@
  */
 class SiteDefaultTemplate extends SiteAbstractTemplate
 {
-	// {{{ public function display()
+    // {{{ public function display()
 
-	public function display(SiteLayoutData $data)
-	{
-		echo <<<HTML
+    public function display(SiteLayoutData $data)
+    {
+        echo <<<HTML
 <!DOCTYPE html>
 <!--[if lt IE 7 ]> <html class="ie6"> <![endif]-->
 <!--[if IE 7 ]>    <html class="ie7"> <![endif]-->
@@ -39,9 +39,7 @@ class SiteDefaultTemplate extends SiteAbstractTemplate
 </html>
 
 HTML;
-	}
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

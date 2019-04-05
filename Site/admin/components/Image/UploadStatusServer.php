@@ -10,5 +10,3 @@
 class SiteImageUploadStatusServer extends SiteUploadStatusServer
 {
 }
-
-?>

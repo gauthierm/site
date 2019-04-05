@@ -9,215 +9,250 @@
  */
 class SiteArticleEdit extends AdminDBEdit
 {
-	// {{{ protected properties
+    // {{{ protected properties
 
-	protected $parent;
-	protected $edit_article;
+    protected $parent;
+    protected $edit_article;
 
-	// }}}
+    // }}}
 
-	// init phase
-	// {{{ protected function initInternal()
+    // init phase
+    // {{{ protected function initInternal()
 
-	protected function initInternal()
-	{
-		parent::initInternal();
+    protected function initInternal()
+    {
+        parent::initInternal();
 
-		$this->ui->mapClassPrefixToPath('Site', 'Site');
-		$this->ui->loadFromXML($this->getUiXml());
+        $this->ui->mapClassPrefixToPath('Site', 'Site');
+        $this->ui->loadFromXML($this->getUiXml());
 
-		$this->initArticle();
+        $this->initArticle();
 
-		$this->parent = SiteApplication::initVar('parent');
+        $this->parent = SiteApplication::initVar('parent');
 
-		$form = $this->ui->getWidget('edit_form');
-		$form->addHiddenField('parent', $this->parent);
+        $form = $this->ui->getWidget('edit_form');
+        $form->addHiddenField('parent', $this->parent);
 
-		if ($this->id === null)
-			$this->ui->getWidget('shortname_field')->visible = false;
-	}
+        if ($this->id === null) {
+            $this->ui->getWidget('shortname_field')->visible = false;
+        }
+    }
 
-	// }}}
-	// {{{ protected function initArticle()
+    // }}}
+    // {{{ protected function initArticle()
 
-	protected function initArticle()
-	{
-		$class_name = SwatDBClassMap::get('SiteArticle');
-		$this->edit_article = new $class_name();
-		$this->edit_article->setDatabase($this->app->db);
+    protected function initArticle()
+    {
+        $class_name = SwatDBClassMap::get('SiteArticle');
+        $this->edit_article = new $class_name();
+        $this->edit_article->setDatabase($this->app->db);
 
-		if ($this->id !== null) {
-			if (!$this->edit_article->load($this->id))
-				throw new AdminNotFoundException(
-					sprintf(Site::_('Article with id "%s" not found.'),
-						$this->id));
-		}
-	}
+        if ($this->id !== null) {
+            if (!$this->edit_article->load($this->id)) {
+                throw new AdminNotFoundException(
+                    sprintf(
+                        Site::_('Article with id "%s" not found.'),
+                        $this->id
+                    )
+                );
+            }
+        }
+    }
 
-	// }}}
-	// {{{ protected function getUiXml()
+    // }}}
+    // {{{ protected function getUiXml()
 
-	protected function getUiXml()
-	{
-		return __DIR__.'/edit.xml';
-	}
+    protected function getUiXml()
+    {
+        return __DIR__ . '/edit.xml';
+    }
 
-	// }}}
+    // }}}
 
-	// process phase
-	// {{{ protected function validate()
+    // process phase
+    // {{{ protected function validate()
 
-	protected function validate()
-	{
-		$shortname = $this->ui->getWidget('shortname');
-		$title = $this->ui->getWidget('title');
+    protected function validate()
+    {
+        $shortname = $this->ui->getWidget('shortname');
+        $title = $this->ui->getWidget('title');
 
-		if ($this->id === null && $shortname->value === null) {
-			$new_shortname = $this->generateShortname($title->value);
-			$shortname->value = $new_shortname;
-		} elseif (!$this->validateShortname($shortname->value)) {
-			$message = new SwatMessage(
-				Site::_('Shortname already exists and must be unique.'),
-				'error');
+        if ($this->id === null && $shortname->value === null) {
+            $new_shortname = $this->generateShortname($title->value);
+            $shortname->value = $new_shortname;
+        } elseif (!$this->validateShortname($shortname->value)) {
+            $message = new SwatMessage(
+                Site::_('Shortname already exists and must be unique.'),
+                'error'
+            );
 
-			$shortname->addMessage($message);
-		}
-	}
+            $shortname->addMessage($message);
+        }
+    }
 
-	// }}}
-	// {{{ protected function validateShortname()
+    // }}}
+    // {{{ protected function validateShortname()
 
-	protected function validateShortname($shortname)
-	{
-		$valid = true;
+    protected function validateShortname($shortname)
+    {
+        $valid = true;
 
-		$class_name = SwatDBClassMap::get('SiteArticle');
-		$article = new $class_name();
-		$article->setDatabase($this->app->db);
+        $class_name = SwatDBClassMap::get('SiteArticle');
+        $article = new $class_name();
+        $article->setDatabase($this->app->db);
 
-		if ($article->loadByShortname($shortname)) {
-			if ($article->id !== $this->edit_article->id &&
-				$article->getInternalValue('parent') == $this->parent) {
-				$valid = false;
-			}
-		}
+        if ($article->loadByShortname($shortname)) {
+            if (
+                $article->id !== $this->edit_article->id &&
+                $article->getInternalValue('parent') == $this->parent
+            ) {
+                $valid = false;
+            }
+        }
 
-		return $valid;
-	}
+        return $valid;
+    }
 
-	// }}}
-	// {{{ protected function saveDBData()
+    // }}}
+    // {{{ protected function saveDBData()
 
-	protected function saveDBData()
-	{
-		$now = new SwatDate();
-		$now->toUTC();
+    protected function saveDBData()
+    {
+        $now = new SwatDate();
+        $now->toUTC();
 
-		if ($this->id === null)
-			$this->edit_article->createdate = $now->getDate();
+        if ($this->id === null) {
+            $this->edit_article->createdate = $now->getDate();
+        }
 
-		$this->edit_article->parent        = $this->parent;
-		$this->edit_article->modified_date = $now->getDate();
+        $this->edit_article->parent = $this->parent;
+        $this->edit_article->modified_date = $now->getDate();
 
-		$this->saveArticle();
-		$this->addToSearchQueue();
+        $this->saveArticle();
+        $this->addToSearchQueue();
 
-		if (isset($this->app->memcache))
-			$this->app->memcache->flushNs('article');
+        if (isset($this->app->memcache)) {
+            $this->app->memcache->flushNs('article');
+        }
 
-		$message = new SwatMessage(
-			sprintf(Site::_('“%s” has been saved.'),
-				$this->edit_article->title));
+        $message = new SwatMessage(
+            sprintf(Site::_('“%s” has been saved.'), $this->edit_article->title)
+        );
 
-		$this->app->messages->add($message);
-	}
+        $this->app->messages->add($message);
+    }
 
-	// }}}
-	// {{{ protected function addToSearchQueue()
+    // }}}
+    // {{{ protected function addToSearchQueue()
 
-	protected function addToSearchQueue()
-	{
-		// this is automatically wrapped in a transaction because it is
-		// called in saveDBData()
-		$type = NateGoSearch::getDocumentType($this->app->db, 'article');
+    protected function addToSearchQueue()
+    {
+        // this is automatically wrapped in a transaction because it is
+        // called in saveDBData()
+        $type = NateGoSearch::getDocumentType($this->app->db, 'article');
 
-		if ($type === null)
-			return;
+        if ($type === null) {
+            return;
+        }
 
-		$sql = sprintf('delete from NateGoSearchQueue
+        $sql = sprintf(
+            'delete from NateGoSearchQueue
 			where document_id = %s and document_type = %s',
-			$this->app->db->quote($this->edit_article->id, 'integer'),
-			$this->app->db->quote($type, 'integer'));
+            $this->app->db->quote($this->edit_article->id, 'integer'),
+            $this->app->db->quote($type, 'integer')
+        );
 
-		SwatDB::exec($this->app->db, $sql);
+        SwatDB::exec($this->app->db, $sql);
 
-		$sql = sprintf('insert into NateGoSearchQueue
+        $sql = sprintf(
+            'insert into NateGoSearchQueue
 			(document_id, document_type) values (%s, %s)',
-			$this->app->db->quote($this->edit_article->id, 'integer'),
-			$this->app->db->quote($type, 'integer'));
+            $this->app->db->quote($this->edit_article->id, 'integer'),
+            $this->app->db->quote($type, 'integer')
+        );
 
-		SwatDB::exec($this->app->db, $sql);
-	}
+        SwatDB::exec($this->app->db, $sql);
+    }
 
-	// }}}
-	// {{{ protected function saveArticle()
+    // }}}
+    // {{{ protected function saveArticle()
 
-	protected function saveArticle()
-	{
-		$values = $this->ui->getValues(array('title', 'shortname', 'bodytext',
-			'description', 'enabled', 'visible', 'searchable'));
+    protected function saveArticle()
+    {
+        $values = $this->ui->getValues(array(
+            'title',
+            'shortname',
+            'bodytext',
+            'description',
+            'enabled',
+            'visible',
+            'searchable'
+        ));
 
-		$this->edit_article->title         = $values['title'];
-		$this->edit_article->shortname     = $values['shortname'];
-		$this->edit_article->bodytext      = $values['bodytext'];
-		$this->edit_article->description   = $values['description'];
-		$this->edit_article->enabled       = $values['enabled'];
-		$this->edit_article->visible       = $values['visible'];
-		$this->edit_article->searchable    = $values['searchable'];
+        $this->edit_article->title = $values['title'];
+        $this->edit_article->shortname = $values['shortname'];
+        $this->edit_article->bodytext = $values['bodytext'];
+        $this->edit_article->description = $values['description'];
+        $this->edit_article->enabled = $values['enabled'];
+        $this->edit_article->visible = $values['visible'];
+        $this->edit_article->searchable = $values['searchable'];
 
-		$this->edit_article->save();
-	}
+        $this->edit_article->save();
+    }
 
-	// }}}
+    // }}}
 
-	// build phase
-	// {{{ protected function loadDBData()
+    // build phase
+    // {{{ protected function loadDBData()
 
-	protected function loadDBData()
-	{
-		$this->ui->setValues($this->edit_article->getAttributes());
+    protected function loadDBData()
+    {
+        $this->ui->setValues($this->edit_article->getAttributes());
 
-		$this->parent = $this->edit_article->getInternalValue('parent');
-		$form = $this->ui->getWidget('edit_form');
-		$form->addHiddenField('parent', $this->parent);
-	}
+        $this->parent = $this->edit_article->getInternalValue('parent');
+        $form = $this->ui->getWidget('edit_form');
+        $form->addHiddenField('parent', $this->parent);
+    }
 
-	// }}}
-	// {{{ protected function buildNavBar()
+    // }}}
+    // {{{ protected function buildNavBar()
 
-	protected function buildNavBar()
-	{
-		if ($this->id !== null) {
-			$navbar_rs = SwatDB::executeStoredProc($this->app->db,
-				'getArticleNavBar', array($this->id));
+    protected function buildNavBar()
+    {
+        if ($this->id !== null) {
+            $navbar_rs = SwatDB::executeStoredProc(
+                $this->app->db,
+                'getArticleNavBar',
+                array($this->id)
+            );
 
-			foreach ($navbar_rs as $elem)
-				$this->navbar->addEntry(new SwatNavBarEntry($elem->title,
-					'Article/Index?id='.$elem->id));
+            foreach ($navbar_rs as $elem) {
+                $this->navbar->addEntry(
+                    new SwatNavBarEntry(
+                        $elem->title,
+                        'Article/Index?id=' . $elem->id
+                    )
+                );
+            }
+        } elseif ($this->parent !== null) {
+            $navbar_rs = SwatDB::executeStoredProc(
+                $this->app->db,
+                'getArticleNavBar',
+                array($this->parent)
+            );
 
-		} elseif ($this->parent !== null) {
-			$navbar_rs = SwatDB::executeStoredProc($this->app->db,
-				'getArticleNavBar', array($this->parent));
+            foreach ($navbar_rs as $elem) {
+                $this->navbar->addEntry(
+                    new SwatNavBarEntry(
+                        $elem->title,
+                        'Article/Index?id=' . $elem->id
+                    )
+                );
+            }
+        }
 
-			foreach ($navbar_rs as $elem)
-				$this->navbar->addEntry(new SwatNavBarEntry($elem->title,
-					'Article/Index?id='.$elem->id));
-		}
+        parent::buildNavBar();
+    }
 
-		parent::buildNavBar();
-	}
-
-	// }}}
+    // }}}
 }
-
-?>

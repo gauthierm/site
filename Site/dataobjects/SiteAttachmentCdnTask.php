@@ -9,99 +9,98 @@
  */
 class SiteAttachmentCdnTask extends SiteCdnTask
 {
-	// public methods
-	// {{{ public function getAttemptDescription()
+    // public methods
+    // {{{ public function getAttemptDescription()
 
-	public function getAttemptDescription()
-	{
-		return sprintf($this->getAttemptDescriptionString(),
-			Site::_('attachment'),
-			$this->getInternalValue('attachment'),
-			$this->file_path,
-			$this->operation);
-	}
+    public function getAttemptDescription()
+    {
+        return sprintf(
+            $this->getAttemptDescriptionString(),
+            Site::_('attachment'),
+            $this->getInternalValue('attachment'),
+            $this->file_path,
+            $this->operation
+        );
+    }
 
-	// }}}
+    // }}}
 
-	// protected methods
-	// {{{ protected function init()
+    // protected methods
+    // {{{ protected function init()
 
-	protected function init()
-	{
-		parent::init();
+    protected function init()
+    {
+        parent::init();
 
-		$this->registerInternalProperty('attachment',
-			SwatDBClassMap::get('SiteAttachment'));
+        $this->registerInternalProperty(
+            'attachment',
+            SwatDBClassMap::get('SiteAttachment')
+        );
 
-		$this->table = 'AttachmentCdnQueue';
-	}
+        $this->table = 'AttachmentCdnQueue';
+    }
 
-	// }}}
-	// {{{ protected function getLocalFilePath()
+    // }}}
+    // {{{ protected function getLocalFilePath()
 
-	protected function getLocalFilePath()
-	{
-		return ($this->hasAttachment()) ?
-			$this->attachment->getFilePath() :
-			null;
-	}
+    protected function getLocalFilePath()
+    {
+        return $this->hasAttachment() ? $this->attachment->getFilePath() : null;
+    }
 
-	// }}}
-	// {{{ protected function copy()
+    // }}}
+    // {{{ protected function copy()
 
-	protected function copy(SiteCdnModule $cdn)
-	{
-		if ($this->hasAttachment()) {
-			// Perform all DB actions first. That way we can roll them back if
-			// anything goes wrong with the CDN operation.
-			$this->attachment->on_cdn = true;
-			$this->attachment->save();
+    protected function copy(SiteCdnModule $cdn)
+    {
+        if ($this->hasAttachment()) {
+            // Perform all DB actions first. That way we can roll them back if
+            // anything goes wrong with the CDN operation.
+            $this->attachment->on_cdn = true;
+            $this->attachment->save();
 
-			$headers = $this->attachment->getHttpHeaders();
+            $headers = $this->attachment->getHttpHeaders();
 
-			if (mb_strlen($this->override_http_headers)) {
-				$headers = array_merge(
-					$headers, unserialize($this->override_http_headers)
-				);
-			}
+            if (mb_strlen($this->override_http_headers)) {
+                $headers = array_merge(
+                    $headers,
+                    unserialize($this->override_http_headers)
+                );
+            }
 
-			$cdn->copyFile(
-				$this->attachment->getUriSuffix(),
-				$this->attachment->getFilePath(),
-				$headers,
-				$this->getAccessType()
-			);
-		}
-	}
+            $cdn->copyFile(
+                $this->attachment->getUriSuffix(),
+                $this->attachment->getFilePath(),
+                $headers,
+                $this->getAccessType()
+            );
+        }
+    }
 
-	// }}}
-	// {{{ protected function remove()
+    // }}}
+    // {{{ protected function remove()
 
-	protected function remove(SiteCdnModule $cdn)
-	{
-		// Perform all DB actions first. That way we can roll them back if
-		// anything goes wrong with the CDN operation.
-		if ($this->hasAttachment()) {
-			$this->attachment->on_cdn = false;
-			$this->attachment->save();
-		}
+    protected function remove(SiteCdnModule $cdn)
+    {
+        // Perform all DB actions first. That way we can roll them back if
+        // anything goes wrong with the CDN operation.
+        if ($this->hasAttachment()) {
+            $this->attachment->on_cdn = false;
+            $this->attachment->save();
+        }
 
-		$cdn->removeFile(
-			$this->file_path
-		);
-	}
+        $cdn->removeFile($this->file_path);
+    }
 
-	// }}}
+    // }}}
 
-	// helper methods
-	// {{{ protected function hasAttachment()
+    // helper methods
+    // {{{ protected function hasAttachment()
 
-	protected function hasAttachment()
-	{
-		return ($this->attachment instanceof SiteAttachment);
-	}
+    protected function hasAttachment()
+    {
+        return $this->attachment instanceof SiteAttachment;
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

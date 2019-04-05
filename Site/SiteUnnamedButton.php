@@ -11,30 +11,30 @@
  */
 class SiteUnnamedButton extends SwatButton
 {
-	// {{{ public function display()
+    // {{{ public function display()
 
-	public function display()
-	{
-		if (!$this->visible)
-			return;
+    public function display()
+    {
+        if (!$this->visible) {
+            return;
+        }
 
-		$form = $this->getFirstAncestor('SwatForm');
-		$primary = ($form !== null &&
-			$form->getFirstDescendant('SwatButton') === $this);
+        $form = $this->getFirstAncestor('SwatForm');
+        $primary =
+            $form !== null && $form->getFirstDescendant('SwatButton') === $this;
 
-		$input_tag = new SwatHtmlTag('input');
-		$input_tag->type = 'submit';
-		$input_tag->id = $this->id;
-		$input_tag->value = $this->title;
-		$input_tag->class = $this->getCSSClassString();
+        $input_tag = new SwatHtmlTag('input');
+        $input_tag->type = 'submit';
+        $input_tag->id = $this->id;
+        $input_tag->value = $this->title;
+        $input_tag->class = $this->getCSSClassString();
 
-		if ($this->access_key != '')
-			$input_tag->accesskey = $this->access_key;
+        if ($this->access_key != '') {
+            $input_tag->accesskey = $this->access_key;
+        }
 
-		$input_tag->display();
-	}
+        $input_tag->display();
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

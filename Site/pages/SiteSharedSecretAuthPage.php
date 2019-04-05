@@ -9,125 +9,123 @@
  */
 class SiteSharedSecretAuthPage extends SitePageDecorator
 {
-	// {{{ protected properties
+    // {{{ protected properties
 
-	/**
-	 * List of GET variables we exclude from the MAC check.
-	 *
-	 * @var array
-	 */
-	protected $exclude_names = array('mac', 'source', 'instance');
+    /**
+     * List of GET variables we exclude from the MAC check.
+     *
+     * @var array
+     */
+    protected $exclude_names = array('mac', 'source', 'instance');
 
-	// }}}
-	// {{{ public init()
+    // }}}
+    // {{{ public init()
 
-	public function init()
-	{
-		if (!$this->isRequestAuthentic($this->getVariables())) {
-			$key     = $this->getHashKey();
-			$message = $this->getHashMessage($this->getVariables());
+    public function init()
+    {
+        if (!$this->isRequestAuthentic($this->getVariables())) {
+            $key = $this->getHashKey();
+            $message = $this->getHashMessage($this->getVariables());
 
-			$expected = $this->getHashMac($message, $key);
-			$provided = (isset($_GET['mac'])) ? $_GET['mac'] : '';
+            $expected = $this->getHashMac($message, $key);
+            $provided = isset($_GET['mac']) ? $_GET['mac'] : '';
 
-			throw new SiteInvalidMacException(
-				sprintf(
-					"Invalid message authentication code.\n\n".
-					"Code expected: %s.\n".
-					"Code provided: %s.",
-					$expected,
-					$provided
-				)
-			);
-		}
+            throw new SiteInvalidMacException(
+                sprintf(
+                    "Invalid message authentication code.\n\n" .
+                        "Code expected: %s.\n" .
+                        'Code provided: %s.',
+                    $expected,
+                    $provided
+                )
+            );
+        }
 
-		parent::init();
-	}
+        parent::init();
+    }
 
-	// }}}
-	// {{{ protected function getHashKey()
+    // }}}
+    // {{{ protected function getHashKey()
 
-	protected function getHashKey()
-	{
-		$api_key = (isset($_GET['key'])) ? $_GET['key'] : '';
+    protected function getHashKey()
+    {
+        $api_key = isset($_GET['key']) ? $_GET['key'] : '';
 
-		if ($api_key == '') {
-			throw new SiteInvalidMacException('No API key provided.');
-		}
+        if ($api_key == '') {
+            throw new SiteInvalidMacException('No API key provided.');
+        }
 
-		$class_name = SwatDBClassMap::get('SiteApiCredential');
-		$credential = new $class_name();
-		$credential->setDatabase($this->app->db);
+        $class_name = SwatDBClassMap::get('SiteApiCredential');
+        $credential = new $class_name();
+        $credential->setDatabase($this->app->db);
 
-		if (!$credential->loadByApiKey($api_key)) {
-			throw new SiteInvalidMacException(
-				sprintf(
-					'Unable to load shared secret for API key: %s.',
-					$api_key
-				)
-			);
-		}
+        if (!$credential->loadByApiKey($api_key)) {
+            throw new SiteInvalidMacException(
+                sprintf(
+                    'Unable to load shared secret for API key: %s.',
+                    $api_key
+                )
+            );
+        }
 
-		return $credential->api_shared_secret;
-	}
+        return $credential->api_shared_secret;
+    }
 
-	// }}}
-	// {{{ protected function getVariables()
+    // }}}
+    // {{{ protected function getVariables()
 
-	protected function getVariables()
-	{
-		$vars = array();
+    protected function getVariables()
+    {
+        $vars = array();
 
-		$exclude_names   = $this->exclude_names;
-		$exclude_names[] = $this->app->session->getSessionName();
+        $exclude_names = $this->exclude_names;
+        $exclude_names[] = $this->app->session->getSessionName();
 
-		foreach ($_GET as $name => $value) {
-			if (!in_array($name, $exclude_names)) {
-				$vars[$name] = $value;
-			}
-		}
+        foreach ($_GET as $name => $value) {
+            if (!in_array($name, $exclude_names)) {
+                $vars[$name] = $value;
+            }
+        }
 
-		return $vars;
-	}
+        return $vars;
+    }
 
-	// }}}
-	// {{{ protected function isRequestAuthentic()
+    // }}}
+    // {{{ protected function isRequestAuthentic()
 
-	protected function isRequestAuthentic($vars)
-	{
-		$key     = $this->getHashKey();
-		$message = $this->getHashMessage($vars);
+    protected function isRequestAuthentic($vars)
+    {
+        $key = $this->getHashKey();
+        $message = $this->getHashMessage($vars);
 
-		return ((isset($_GET['mac'])) &&
-			($this->getHashMac($message, $key) === $_GET['mac']));
-	}
+        return isset($_GET['mac']) &&
+            $this->getHashMac($message, $key) === $_GET['mac'];
+    }
 
-	// }}}
-	// {{{ protected function getHashMessage()
+    // }}}
+    // {{{ protected function getHashMessage()
 
-	protected function getHashMessage($vars)
-	{
-		// Sort the varaibles into alphabetical order.
-		ksort($vars, SORT_STRING);
+    protected function getHashMessage($vars)
+    {
+        // Sort the varaibles into alphabetical order.
+        ksort($vars, SORT_STRING);
 
-		$message = '';
+        $message = '';
 
-		foreach ($vars as $name => $value) {
-			$message.= $name.$value;
-		}
+        foreach ($vars as $name => $value) {
+            $message .= $name . $value;
+        }
 
-		return $message;
-	}
+        return $message;
+    }
 
-	// }}}
-	// {{{ protected function getHashMac()
+    // }}}
+    // {{{ protected function getHashMac()
 
-	protected function getHashMac($message, $key)
-	{
-		return hash_hmac('sha256', $message, $key);
-	}
+    protected function getHashMac($message, $key)
+    {
+        return hash_hmac('sha256', $message, $key);
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

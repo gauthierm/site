@@ -10,43 +10,41 @@
  */
 class SiteAdReferrer extends SwatDBDataObject
 {
-	// {{{ public properties
+    // {{{ public properties
 
-	/**
-	 * Unique identifier for this ad referrer
-	 *
-	 * @var integer
-	 */
-	public $id;
+    /**
+     * Unique identifier for this ad referrer
+     *
+     * @var integer
+     */
+    public $id;
 
-	/**
-	 * The date this referral occurred
-	 *
-	 * @var SwatDate
-	 */
-	public $createdate;
+    /**
+     * The date this referral occurred
+     *
+     * @var SwatDate
+     */
+    public $createdate;
 
-	/**
-	 * The HTTP referer of this referral
-	 *
-	 * May not exist if there was no HTTP referer.
-	 *
-	 * @var string
-	 */
-	public $http_referer;
+    /**
+     * The HTTP referer of this referral
+     *
+     * May not exist if there was no HTTP referer.
+     *
+     * @var string
+     */
+    public $http_referer;
 
-	// }}}
-	// {{{ protected function init()
+    // }}}
+    // {{{ protected function init()
 
-	protected function init()
-	{
-		$this->table = 'AdReferrer';
-		$this->id_field = 'integer:id';
-		$this->registerDateProperty('createdate');
-		$this->registerInternalProperty('ad', 'SiteAd');
-	}
+    protected function init()
+    {
+        $this->table = 'AdReferrer';
+        $this->id_field = 'integer:id';
+        $this->registerDateProperty('createdate');
+        $this->registerInternalProperty('ad', 'SiteAd');
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

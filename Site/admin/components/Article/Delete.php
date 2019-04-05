@@ -9,142 +9,175 @@
  */
 class SiteArticleDelete extends AdminDBDelete
 {
-	// {{{ protected properties
+    // {{{ protected properties
 
-	/**
-	 * Used for custom relocate
-	 *
-	 * @var integer
-	 */
-	protected $parent_id;
+    /**
+     * Used for custom relocate
+     *
+     * @var integer
+     */
+    protected $parent_id;
 
-	// }}}
+    // }}}
 
-	// process phase
-	// {{{ protected function processDBData()
+    // process phase
+    // {{{ protected function processDBData()
 
-	protected function processDBData()
-	{
-		parent::processDBData();
+    protected function processDBData()
+    {
+        parent::processDBData();
 
-		$sql = sprintf('select parent from Article where id = %s',
-			$this->app->db->quote($this->getFirstItem(), 'integer'));
+        $sql = sprintf(
+            'select parent from Article where id = %s',
+            $this->app->db->quote($this->getFirstItem(), 'integer')
+        );
 
-		$this->parent_id = SwatDB::queryOne($this->app->db, $sql);
+        $this->parent_id = SwatDB::queryOne($this->app->db, $sql);
 
-		$sql = 'delete from Article where id in (%s)';
-		$item_list = $this->getItemList('integer');
-		$sql = sprintf($sql, $item_list);
+        $sql = 'delete from Article where id in (%s)';
+        $item_list = $this->getItemList('integer');
+        $sql = sprintf($sql, $item_list);
 
-		$num = SwatDB::exec($this->app->db, $sql);
+        $num = SwatDB::exec($this->app->db, $sql);
 
-		$message = new SwatMessage(sprintf(Site::ngettext(
-			'One article has been deleted.',
-			'%s articles have been deleted.', $num),
-			SwatString::numberFormat($num)));
+        $message = new SwatMessage(
+            sprintf(
+                Site::ngettext(
+                    'One article has been deleted.',
+                    '%s articles have been deleted.',
+                    $num
+                ),
+                SwatString::numberFormat($num)
+            )
+        );
 
-		$this->app->messages->add($message);
+        $this->app->messages->add($message);
 
-		if (isset($this->app->memcache))
-			$this->app->memcache->flushNs('article');
-	}
+        if (isset($this->app->memcache)) {
+            $this->app->memcache->flushNs('article');
+        }
+    }
 
-	// }}}
-	// {{{ protected function relocate()
+    // }}}
+    // {{{ protected function relocate()
 
-	/**
-	 * Relocate after process
-	 */
-	protected function relocate()
-	{
-		if ($this->single_delete) {
-			if ($this->parent_id === null)
-				$this->app->relocate('Article/Index');
-			else
-				$this->app->relocate(sprintf('Article/Index?id=%s',
-					$this->parent_id));
+    /**
+     * Relocate after process
+     */
+    protected function relocate()
+    {
+        if ($this->single_delete) {
+            if ($this->parent_id === null) {
+                $this->app->relocate('Article/Index');
+            } else {
+                $this->app->relocate(
+                    sprintf('Article/Index?id=%s', $this->parent_id)
+                );
+            }
+        } else {
+            parent::relocate();
+        }
+    }
 
-		} else {
-			parent::relocate();
-		}
-	}
+    // }}}
 
-	// }}}
+    // build phase
+    // {{{ protected function buildInternal()
 
-	// build phase
-	// {{{ protected function buildInternal()
+    protected function buildInternal()
+    {
+        parent::buildInternal();
 
-	protected function buildInternal()
-	{
-		parent::buildInternal();
+        $item_list = $this->getItemList('integer');
 
-		$item_list = $this->getItemList('integer');
+        $dep = new AdminListDependency();
+        $dep->setTitle(Site::_('article'), Site::_('articles'));
+        $dep->entries = AdminListDependency::queryEntries(
+            $this->app->db,
+            'Article',
+            'integer:id',
+            null,
+            'text:title',
+            'title',
+            'id in (' . $item_list . ')',
+            AdminDependency::DELETE
+        );
 
-		$dep = new AdminListDependency();
-		$dep->setTitle(Site::_('article'), Site::_('articles'));
-		$dep->entries = AdminListDependency::queryEntries($this->app->db,
-			'Article', 'integer:id', null, 'text:title', 'title',
-			'id in ('.$item_list.')', AdminDependency::DELETE);
+        $this->getDependencies($dep, $item_list);
 
-		$this->getDependencies($dep, $item_list);
+        $message = $this->ui->getWidget('confirmation_message');
+        $message->content = $dep->getMessage();
+        $message->content_type = 'text/xml';
 
-		$message = $this->ui->getWidget('confirmation_message');
-		$message->content = $dep->getMessage();
-		$message->content_type = 'text/xml';
+        if ($dep->getStatusLevelCount(AdminDependency::DELETE) == 0) {
+            $this->switchToCancelButton();
+        }
+    }
 
-		if ($dep->getStatusLevelCount(AdminDependency::DELETE) == 0)
-			$this->switchToCancelButton();
-	}
+    // }}}
+    // {{{ protected function getDependencies()
 
-	// }}}
-	// {{{ protected function getDependencies()
+    protected function getDependencies($dep, $item_list)
+    {
+        $dep_subarticles = new AdminListDependency();
+        $dep_subarticles->setTitle(
+            Site::_('sub-article'),
+            Site::_('sub-articles')
+        );
 
-	protected function getDependencies($dep, $item_list)
-	{
-		$dep_subarticles = new AdminListDependency();
-		$dep_subarticles->setTitle(
-			Site::_('sub-article'), Site::_('sub-articles'));
+        $dep_subarticles->entries = AdminListDependency::queryEntries(
+            $this->app->db,
+            'Article',
+            'integer:id',
+            'integer:parent',
+            'title',
+            'title',
+            'parent in (' . $item_list . ')',
+            AdminDependency::DELETE
+        );
 
-		$dep_subarticles->entries = AdminListDependency::queryEntries(
-			$this->app->db, 'Article', 'integer:id', 'integer:parent',
-			'title', 'title', 'parent in ('.$item_list.')',
-			AdminDependency::DELETE);
+        $dep->addDependency($dep_subarticles);
 
-		$dep->addDependency($dep_subarticles);
+        if (count($dep_subarticles->entries)) {
+            $entries = array();
+            foreach ($dep_subarticles->entries as $entry) {
+                $entries[] = $this->app->db->quote($entry->id, 'integer');
+            }
 
-		if (count($dep_subarticles->entries)) {
-			$entries = array();
-			foreach ($dep_subarticles->entries as $entry)
-				$entries[] = $this->app->db->quote($entry->id, 'integer');
+            $item_list = implode(',', $entries);
 
-			$item_list = implode(',', $entries);
+            $this->getDependencies($dep_subarticles, $item_list);
+        }
+    }
 
-			$this->getDependencies($dep_subarticles, $item_list);
-		}
-	}
+    // }}}
+    // {{{ protected function buildNavBar()
 
-	// }}}
-	// {{{ protected function buildNavBar()
+    protected function buildNavBar()
+    {
+        parent::buildNavBar();
 
-	protected function buildNavBar()
-	{
-		parent::buildNavBar();
+        $this->navbar->popEntry();
 
-		$this->navbar->popEntry();
+        if ($this->single_delete) {
+            $navbar_rs = SwatDB::executeStoredProc(
+                $this->app->db,
+                'getArticleNavBar',
+                array($this->getFirstItem())
+            );
 
-		if ($this->single_delete) {
-			$navbar_rs = SwatDB::executeStoredProc($this->app->db,
-				'getArticleNavBar', array($this->getFirstItem()));
+            foreach ($navbar_rs as $elem) {
+                $this->navbar->addEntry(
+                    new SwatNavBarEntry(
+                        $elem->title,
+                        'Article/Index?id=' . $elem->id
+                    )
+                );
+            }
+        }
 
-			foreach ($navbar_rs as $elem)
-				$this->navbar->addEntry(new SwatNavBarEntry($elem->title,
-					'Article/Index?id='.$elem->id));
-		}
+        $this->navbar->addEntry(new SwatNavBarEntry(Site::_('Delete')));
+    }
 
-		$this->navbar->addEntry(new SwatNavBarEntry(Site::_('Delete')));
-	}
-
-	// }}}
+    // }}}
 }
-
-?>

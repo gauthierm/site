@@ -8,85 +8,84 @@
  */
 class SiteSearchPage extends SiteSearchResultsPage
 {
-	// {{{ protected properties
+    // {{{ protected properties
 
-	/**
-	 * The user-interface of the search form
-	 *
-	 * @var StoreUI
-	 */
-	protected $form_ui;
+    /**
+     * The user-interface of the search form
+     *
+     * @var StoreUI
+     */
+    protected $form_ui;
 
-	/**
-	 * The SwatML file to load the search user-interface from
-	 *
-	 * @var string
-	 */
-	protected $form_ui_xml = __DIR__.'/search-form.xml';
+    /**
+     * The SwatML file to load the search user-interface from
+     *
+     * @var string
+     */
+    protected $form_ui_xml = __DIR__ . '/search-form.xml';
 
-	// }}}
+    // }}}
 
-	// init phase
-	// {{{ public function init
+    // init phase
+    // {{{ public function init
 
-	public function init()
-	{
-		parent::init();
+    public function init()
+    {
+        parent::init();
 
-		$this->form_ui = new SwatUI();
-		$this->form_ui->loadFromXML($this->form_ui_xml);
+        $this->form_ui = new SwatUI();
+        $this->form_ui->loadFromXML($this->form_ui_xml);
 
-		$form = $this->form_ui->getWidget('search_form');
-		$form->action = $this->source;
+        $form = $this->form_ui->getWidget('search_form');
+        $form->action = $this->source;
 
-		$this->form_ui->init();
-	}
+        $this->form_ui->init();
+    }
 
-	// }}}
+    // }}}
 
-	// process phase
-	// {{{ public function process
+    // process phase
+    // {{{ public function process
 
-	public function process()
-	{
-		parent::process();
+    public function process()
+    {
+        parent::process();
 
-		$this->form_ui->process();
+        $this->form_ui->process();
 
-		/*
-		 * Nothing else to do...
-		 * the parent class result page is driven by the GET variables this
-		 * form provided.
-		 */
-	}
+        /*
+         * Nothing else to do...
+         * the parent class result page is driven by the GET variables this
+         * form provided.
+         */
+    }
 
-	// }}}
+    // }}}
 
-	// build phase
-	// {{{ public function build()
+    // build phase
+    // {{{ public function build()
 
-	public function build()
-	{
-		$this->layout->startCapture('content');
-		$this->form_ui->display();
-		$this->layout->endCapture();
+    public function build()
+    {
+        $this->layout->startCapture('content');
+        $this->form_ui->display();
+        $this->layout->endCapture();
 
-		parent::build();
-	}
+        parent::build();
+    }
 
-	// }}}
+    // }}}
 
-	// finalize phase
-	// {{{ public function finalize()
+    // finalize phase
+    // {{{ public function finalize()
 
-	public function finalize()
-	{
-		parent::finalize();
-		$this->layout->addHtmlHeadEntrySet(
-			$this->form_ui->getRoot()->getHtmlHeadEntrySet());
-	}
+    public function finalize()
+    {
+        parent::finalize();
+        $this->layout->addHtmlHeadEntrySet(
+            $this->form_ui->getRoot()->getHtmlHeadEntrySet()
+        );
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

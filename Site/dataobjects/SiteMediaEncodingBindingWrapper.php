@@ -14,36 +14,35 @@
  */
 class SiteMediaEncodingBindingWrapper extends SwatDBRecordsetWrapper
 {
-	// {{{ public function initializeFromResultSet()
+    // {{{ public function initializeFromResultSet()
 
-	public function initializeFromResultSet(MDB2_Result_Common $rs)
-	{
-		parent::initializeFromResultSet($rs);
+    public function initializeFromResultSet(MDB2_Result_Common $rs)
+    {
+        parent::initializeFromResultSet($rs);
 
-		if (!$this->getOption('lazy_load')) {
-			$this->loadAllSubDataObjects(
-				'media_type',
-				$this->db,
-				'select * from MediaType where id in (%s)',
-				SwatDBClassMap::get('SiteMediaTypeWrapper')
-			);
-		}
-	}
+        if (!$this->getOption('lazy_load')) {
+            $this->loadAllSubDataObjects(
+                'media_type',
+                $this->db,
+                'select * from MediaType where id in (%s)',
+                SwatDBClassMap::get('SiteMediaTypeWrapper')
+            );
+        }
+    }
 
-	// }}}
-	// {{{ protected function init()
+    // }}}
+    // {{{ protected function init()
 
-	protected function init()
-	{
-		parent::init();
+    protected function init()
+    {
+        parent::init();
 
-		$this->row_wrapper_class =
-			SwatDBClassMap::get('SiteMediaEncodingBinding');
+        $this->row_wrapper_class = SwatDBClassMap::get(
+            'SiteMediaEncodingBinding'
+        );
 
-		$this->index_field = 'media_encoding';
-	}
+        $this->index_field = 'media_encoding';
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

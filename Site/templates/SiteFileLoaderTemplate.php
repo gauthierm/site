@@ -7,14 +7,12 @@
  */
 class SiteFileLoaderTemplate extends SiteAbstractTemplate
 {
-	// {{{ public function display()
+    // {{{ public function display()
 
-	public function display(SiteLayoutData $data)
-	{
-		echo $data->content;
-	}
+    public function display(SiteLayoutData $data)
+    {
+        echo $data->content;
+    }
 
-	// }}}
+    // }}}
 }
-
-?>

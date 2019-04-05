@@ -7,50 +7,43 @@
  */
 abstract class SiteJSONPage extends SitePage
 {
-	// {{{ public function __construct()
+    // {{{ public function __construct()
 
-	public function __construct(
-		SiteApplication $app,
-		SiteLayout $layout = null,
-		array $arguments = array()
-	) {
-		parent::__construct($app, $layout, $arguments);
+    public function __construct(
+        SiteApplication $app,
+        SiteLayout $layout = null,
+        array $arguments = array()
+    ) {
+        parent::__construct($app, $layout, $arguments);
 
-		$this->setLayout(
-			new SiteLayout(
-				$this->app,
-				SiteJSONTemplate::class
-			)
-		);
-	}
+        $this->setLayout(new SiteLayout($this->app, SiteJSONTemplate::class));
+    }
 
-	// }}}
+    // }}}
 
-	// build phase
-	// {{{ public function build()
+    // build phase
+    // {{{ public function build()
 
-	public function build()
-	{
-		$this->layout->data->content = json_encode($this->getResponse());
-	}
+    public function build()
+    {
+        $this->layout->data->content = json_encode($this->getResponse());
+    }
 
-	// }}}
-	// {{{ abstract protected function getResponse()
+    // }}}
+    // {{{ abstract protected function getResponse()
 
-	abstract protected function getResponse();
+    abstract protected function getResponse();
 
-	// }}}
-	// {{{ protected function getStatus()
+    // }}}
+    // {{{ protected function getStatus()
 
-	protected function getStatus($code = 'ok', $message = '')
-	{
-		return array(
-			'code'    => $code,
-			'message' => $message,
-		);
-	}
+    protected function getStatus($code = 'ok', $message = '')
+    {
+        return array(
+            'code' => $code,
+            'message' => $message
+        );
+    }
 
-	// }}}
+    // }}}
 }
-
-?>
