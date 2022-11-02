@@ -19,7 +19,7 @@
  *  if left without height, the pages' height will be set to the height
  *  of the tallest page.
  */
-YAHOO.util.Event.onDOMReady(function() {
+window.addEventListener('DOMContentLoaded', () => {
 	var sliders = YAHOO.util.Dom.getElementsByClassName('site-content-slider');
 	for (var i = 0; i < sliders.length; i++) {
 		var slider = new SiteContentSlider(sliders[i]);
@@ -28,7 +28,6 @@ YAHOO.util.Event.onDOMReady(function() {
 });
 
 var Dom = YAHOO.util.Dom;
-var Event = YAHOO.util.Event;
 
 /**
  * Page in a slider
@@ -62,15 +61,9 @@ class SiteContentSlider {
 		this.container = container;
 
 		// stop automatic switching of pages on click
-		Event.on(
-			this.container,
-			'click',
-			function(e) {
-				this.clearInterval();
-			},
-			this,
-			true
-		);
+		this.container.addEventListener('click', () => {
+			this.clearInterval();
+		});
 
 		this.page_container = document.createElement('div');
 		Dom.addClass(this.page_container, 'page-container');
@@ -133,16 +126,10 @@ class SiteContentSlider {
 			this.setInterval();
 		}
 
-		Event.on(
-			window,
-			'resize',
-			function() {
-				this.initPages();
-				this.setPage(this.current_page);
-			},
-			this,
-			true
-		);
+		window.addEventListener('resize', () => {
+			this.initPages();
+			this.setPage(this.current_page);
+		});
 
 		// If images have dynamic width/height, some browsers (Safari, I'm
 		// looking at you) will return the incorrect height for the page's
@@ -150,19 +137,16 @@ class SiteContentSlider {
 		// once the images finish loading fixes the issue.
 		var images = container.getElementsByTagName('img');
 		var loaded_count = 0;
-		Event.on(
-			images,
-			'load',
-			function() {
+
+		for (var image of images) {
+			image.addEventListener('load', () => {
 				loaded_count++;
 				if (loaded_count === images.length) {
 					this.initPages();
 					this.setPage(this.current_page);
 				}
-			},
-			this,
-			true
-		);
+			});
+		}
 	}
 
 	initSettings() {
@@ -308,41 +292,39 @@ class SiteContentSlider {
 	}
 
 	addTouchEvents() {
-		var that = this;
-
-		Event.on(this.container, 'touchstart', function(e) {
+		this.container.addEventListener('touchstart', e => {
 			var touch = e.touches[0];
-			that.touch_start_x = touch.pageX;
-			that.touch_start_y = touch.pageY;
+			this.touch_start_x = touch.pageX;
+			this.touch_start_y = touch.pageY;
 		});
 
-		Event.on(this.container, 'touchend', function(e) {
-			var width = Dom.getRegion(that.container).width;
+		this.container.addEventListener('touchend', () => {
+			var width = Dom.getRegion(this.container).width;
 
 			// only move the page if the drag was more that 1/5 width
-			if (Math.abs(that.touch_end_x - that.touch_start_x) < width / 5) {
-				var new_index = that.current_page.index;
-			} else if (that.touch_end_x < that.touch_start_x) {
-				var new_index = that.current_page.index + 1;
+			if (Math.abs(this.touch_end_x - this.touch_start_x) < width / 5) {
+				var new_index = this.current_page.index;
+			} else if (this.touch_end_x < this.touch_start_x) {
+				var new_index = this.current_page.index + 1;
 			} else {
-				var new_index = that.current_page.index - 1;
+				var new_index = this.current_page.index - 1;
 			}
 
 			new_index = Math.max(0, new_index);
-			new_index = Math.min(that.pages.length - 1, new_index);
+			new_index = Math.min(this.pages.length - 1, new_index);
 
-			that.setPageWithAnimation(
-				that.pages[new_index],
-				that.page_click_duration,
-				that.touch_x
+			this.setPageWithAnimation(
+				this.pages[new_index],
+				this.page_click_duration,
+				this.touch_x
 			);
 
-			that.touch_start_x = null;
-			that.touch_start_y = null;
+			this.touch_start_x = null;
+			this.touch_start_y = null;
 		});
 
-		Event.on(window, 'touchmove', function(e) {
-			if (that.touch_start_x === null) {
+		window.addEventListener('touchmove', e => {
+			if (this.touch_start_x === null) {
 				return;
 			}
 
@@ -350,40 +332,40 @@ class SiteContentSlider {
 
 			// Prevent vertical scrolling if the movement is mostly horizontal.
 			// This keeps the page from bouncing around.
-			if (Math.abs(that.touch_start_x - touch.pageX) > 10) {
-				Event.preventDefault(e);
+			if (Math.abs(this.touch_start_x - touch.pageX) > 10) {
+				e.preventDefault();
 
 				// also stop the automatical animation of pages
-				that.clearInterval();
+				this.clearInterval();
 			}
 
-			var width = Dom.getRegion(that.container).width;
-			that.touch_end_x = touch.pageX;
+			var width = Dom.getRegion(this.container).width;
+			this.touch_end_x = touch.pageX;
 
-			if (Math.abs(that.touch_start_x - that.touch_end_x) > width) {
-				if (that.touch_start_x > that.touch_end_x) {
+			if (Math.abs(this.touch_start_x - this.touch_end_x) > width) {
+				if (this.touch_start_x > this.touch_end_x) {
 					var drag_width = width;
 				} else {
 					var drag_width = -width;
 				}
 			} else {
-				var drag_width = that.touch_start_x - that.touch_end_x;
+				var drag_width = this.touch_start_x - this.touch_end_x;
 			}
 
-			that.touch_x = Math.min(
+			this.touch_x = Math.min(
 				width,
-				that.current_page.index * -width - drag_width
+				this.current_page.index * -width - drag_width
 			);
 
 			// if at the end/beginning, slow down drag
 			if (
-				that.touch_x > 0 ||
-				that.touch_x < (that.pages.length - 1) * -width
+				this.touch_x > 0 ||
+				this.touch_x < (this.pages.length - 1) * -width
 			) {
-				that.touch_x = that.touch_x + drag_width / 2;
+				this.touch_x = this.touch_x + drag_width / 2;
 			}
 
-			that.positionPages(that.touch_x);
+			this.positionPages(this.touch_x);
 		});
 	}
 
@@ -392,21 +374,13 @@ class SiteContentSlider {
 		Dom.addClass(this.nav, 'slider-nav');
 		this.container.appendChild(this.nav);
 
-		var that = this;
-
 		for (var i = 0; i < this.pages.length; i++) {
-			Event.on(
-				this.pages[i].nav,
-				'click',
-				function(e) {
-					Event.preventDefault(e);
-					that.clearInterval();
-
-					that.setPageWithAnimation(this, that.page_click_duration);
-				},
-				this.pages[i],
-				true
-			);
+			const page = this.pages[i];
+			page.nav.addEventListener('click', () => {
+				e.preventDefault();
+				this.clearInterval();
+				this.setPageWithAnimation(page, this.page_click_duration);
+			});
 
 			this.nav.appendChild(this.pages[i].nav);
 		}
@@ -426,27 +400,15 @@ class SiteContentSlider {
 			document.createTextNode(this.text_prev)
 		);
 
-		Event.on(
-			this.prev,
-			'click',
-			function(e) {
-				Event.preventDefault(e);
-				this.clearInterval();
-				this.prevPageWithAnimation(this.page_click_duration);
-			},
-			this,
-			true
-		);
+		this.prev.addEventListener('click', () => {
+			e.preventDefault();
+			this.clearInterval();
+			this.prevPageWithAnimation(this.page_click_duration);
+		});
 
-		Event.on(
-			this.prev,
-			'dblclick',
-			function(e) {
-				Event.preventDefault(e);
-			},
-			this,
-			true
-		);
+		this.prev.addEventListener('dblclick', () => {
+			e.preventDefault();
+		});
 
 		// create next link
 		this.next = document.createElement('a');
@@ -461,27 +423,15 @@ class SiteContentSlider {
 			document.createTextNode(this.text_next)
 		);
 
-		Event.on(
-			this.next,
-			'click',
-			function(e) {
-				Event.preventDefault(e);
-				this.clearInterval();
-				this.nextPageWithAnimation(this.page_click_duration);
-			},
-			this,
-			true
-		);
+		this.next.addEventListener('click', () => {
+			e.preventDefault();
+			this.clearInterval();
+			this.nextPageWithAnimation(this.page_click_duration);
+		});
 
-		Event.on(
-			this.next,
-			'dblclick',
-			function(e) {
-				Event.preventDefault(e);
-			},
-			this,
-			true
-		);
+		this.next.addEventListener('dblclick', () => {
+			e.preventDefault();
+		});
 
 		// create navigation element
 		this.next_prev = document.createElement('div');

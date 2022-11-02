@@ -1,5 +1,4 @@
 var Dom = YAHOO.util.Dom;
-var Event = YAHOO.util.Event;
 
 class SiteDialog {
 	static STATE_OPENED = 1;
@@ -220,7 +219,7 @@ class SiteDialog {
 				checkSentinel();
 			}
 
-			YAHOO.util.Event.on(window, 'resize', function(e) {
+			window.addEventListener('resize', () => {
 				// Debounce resize updates so they only fire every at most
 				// every SiteDialog.resize_debounce_delay ms.
 				if (timeout) {
@@ -319,21 +318,13 @@ class SiteDialog {
 		}
 
 		if (this.config.dismissable) {
-			Event.on(
-				document.body,
-				'click',
-				this.handleDocumentClick,
-				this,
-				true
-			);
+			document.body.addEventListener('click', e => {
+				this.handleDocumentClick(e);
+			});
 
-			Event.on(
-				document.body,
-				'keydown',
-				this.handleDocumentKeyDown,
-				this,
-				true
-			);
+			document.body.addEventListener('keydown', e => {
+				this.handleDocumentKeyDown(e);
+			});
 		}
 
 		if (SiteDialog.is_desktop && this.config.relative_container) {
@@ -343,7 +334,9 @@ class SiteDialog {
 		}
 
 		if (SiteDialog.has_push_state && this.config.use_push_state) {
-			Event.on(window, 'popstate', this.handlePopState, this, true);
+			window.addEventListener('popstate', e => {
+				this.handlePopState(e);
+			});
 		}
 	}
 
@@ -608,7 +601,7 @@ class SiteDialog {
 	handleDocumentClick(e) {
 		if (this.isOpened()) {
 			var prevent_close = false;
-			var target = Event.getTarget(e);
+			var target = e.target;
 			while (target.parentNode && !prevent_close) {
 				if (
 					target === this.dialog ||

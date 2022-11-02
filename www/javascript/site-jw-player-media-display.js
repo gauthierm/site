@@ -67,7 +67,9 @@ class SiteJwPlayerMediaDisplay {
 
 		SiteJwPlayerMediaDisplay.players.push(this);
 
-		YAHOO.util.Event.onDOMReady(this.init, this, true);
+		window.addEventListener('DOMContentLoaded', () => {
+			this.init();
+		});
 	}
 
 	init() {
@@ -86,17 +88,16 @@ class SiteJwPlayerMediaDisplay {
 		this.drawDialogs();
 		this.setupAnalytics();
 
-		var that = this;
-		this.player.on('setupError', function() {
+		this.player.on('setupError', () => {
 			var upgrade = document.createElement('div');
 			upgrade.className = 'video-player-upgrade';
-			upgrade.innerHTML = that.upgrade_message;
-			that.container.appendChild(upgrade);
+			upgrade.innerHTML = this.upgrade_message;
+			this.container.appendChild(upgrade);
 
-			function resizeUpgradeContainer() {
-				var container_height = that.getPlayerHeight();
-				that.container.style.position = 'relative';
-				that.container.style.height = container_height + 'px';
+			var resizeUpgradeContainer = () => {
+				var container_height = this.getPlayerHeight();
+				this.container.style.position = 'relative';
+				this.container.style.height = container_height + 'px';
 
 				var upgrade_height = YAHOO.util.Dom.getRegion(upgrade).height;
 				upgrade.style.position = 'absolute';
@@ -105,9 +106,9 @@ class SiteJwPlayerMediaDisplay {
 					'top',
 					(container_height - upgrade_height) / 2 + 'px'
 				);
-			}
+			};
 
-			YAHOO.util.Event.on(window, 'resize', resizeUpgradeContainer);
+			window.addEventListener('resize', resizeUpgradeContainer);
 			resizeUpgradeContainer();
 		});
 	}
@@ -558,12 +559,11 @@ class SiteJwPlayerMediaDisplay {
 		restart_link.className = 'restart-video';
 		restart_link.appendChild(document.createTextNode('Watch Again'));
 
-		var that = this;
-		YAHOO.util.Event.on(restart_link, 'click', function(e) {
-			YAHOO.util.Event.preventDefault(e);
-			that.overlay.style.display = 'none';
-			that.complete_overlay.style.display = 'none';
-			that.play();
+		restart_link.addEventListener('click', e => {
+			e.preventDefault();
+			this.overlay.style.display = 'none';
+			this.complete_overlay.style.display = 'none';
+			this.play();
 		});
 
 		div.appendChild(restart_link);
@@ -571,15 +571,9 @@ class SiteJwPlayerMediaDisplay {
 
 		this.overlay.parentNode.appendChild(this.complete_overlay);
 
-		YAHOO.util.Event.on(
-			window,
-			'resize',
-			function() {
-				this.positionOverlay(this.complete_overlay);
-			},
-			this,
-			true
-		);
+		window.addEventListener('resize', () => {
+			this.positionOverlay(this.complete_overlay);
+		});
 	}
 
 	appendResumeMessage() {
@@ -607,12 +601,11 @@ class SiteJwPlayerMediaDisplay {
 			)
 		);
 
-		var that = this;
-		YAHOO.util.Event.on(resume_link, 'click', function(e) {
-			YAHOO.util.Event.preventDefault(e);
-			that.overlay.style.display = 'none';
-			that.resume_overlay.style.display = 'none';
-			that.seek(that.start_position);
+		resume_link.addEventListener('click', e => {
+			e.preventDefault();
+			this.overlay.style.display = 'none';
+			this.resume_overlay.style.display = 'none';
+			this.seek(this.start_position);
 		});
 
 		div.appendChild(resume_link);
@@ -624,11 +617,11 @@ class SiteJwPlayerMediaDisplay {
 			document.createTextNode(SiteJwPlayerMediaDisplay.restart_video_text)
 		);
 
-		YAHOO.util.Event.on(restart_link, 'click', function(e) {
-			YAHOO.util.Event.preventDefault(e);
-			that.overlay.style.display = 'none';
-			that.resume_overlay.style.display = 'none';
-			that.play();
+		restart_link.addEventListener('click', e => {
+			e.preventDefault();
+			this.overlay.style.display = 'none';
+			this.resume_overlay.style.display = 'none';
+			this.play();
 		});
 
 		div.appendChild(restart_link);
@@ -636,15 +629,9 @@ class SiteJwPlayerMediaDisplay {
 
 		this.overlay.parentNode.appendChild(this.resume_overlay);
 
-		YAHOO.util.Event.on(
-			window,
-			'resize',
-			function() {
-				this.positionOverlay(this.resume_overlay);
-			},
-			this,
-			true
-		);
+		window.addEventListener('resize', () => {
+			this.positionOverlay(this.resume_overlay);
+		});
 	}
 
 	displayCompleteMessage() {

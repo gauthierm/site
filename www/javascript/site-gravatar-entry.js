@@ -196,7 +196,9 @@ class SiteGravatarEntry {
 		this.default_image = default_image;
 		this.cleared = false;
 
-		YAHOO.util.Event.onDOMReady(this.init, this, true);
+		window.addEventListener('DOMContentLoaded', () => {
+			this.init();
+		});
 	}
 
 	init() {
@@ -208,24 +210,20 @@ class SiteGravatarEntry {
 			'backgroundImage'
 		);
 
-		YAHOO.util.Event.on(
-			this.input,
-			'keyup',
-			this.handleKeypress,
-			this,
-			true
-		);
+		this.input.addEventListener('keyup', () => {
+			this.handleKeypress();
+		});
 
 		this.current_value = this.getNormalizedValue();
 
 		this.updatePreview(this.input.value);
 	}
 
-	getNormalizedValue(e) {
+	getNormalizedValue() {
 		return this.input.value.replace(/^\s+|\s+$/g, '');
 	}
 
-	handleKeypress(e) {
+	handleKeypress() {
 		if (this.timeout) {
 			clearTimeout(this.timeout);
 		}
@@ -236,13 +234,11 @@ class SiteGravatarEntry {
 			this.preview.style.backgroundImage = this.loading_image;
 		}
 
-		var that = this;
-
-		this.timeout = setTimeout(function() {
-			var value = that.getNormalizedValue();
-			if (value !== that.current_value || that.cleared) {
-				that.updatePreview(value);
-				that.current_value = value;
+		this.timeout = setTimeout(() => {
+			var value = this.getNormalizedValue();
+			if (value !== this.current_value || this.cleared) {
+				this.updatePreview(value);
+				this.current_value = value;
 			}
 		}, SiteGravatarEntry.TYPING_PERIOD);
 	}

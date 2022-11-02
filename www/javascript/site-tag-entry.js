@@ -55,12 +55,9 @@ class SiteTagEntry {
 		this.minimum_query_length = 0;
 		this.query_match_contains = true;
 
-		YAHOO.util.Event.onContentReady(
-			this.id,
-			this.handleOnAvailable,
-			this,
-			true
-		);
+		window.addEventListener('DOMContentLoaded', () => {
+			this.handleOnAvailable();
+		});
 	}
 
 	/**
@@ -130,15 +127,10 @@ class SiteTagEntry {
 
 		if (this.allow_adding_tags) {
 			this.a_tag = this.getAddTagElement();
-			YAHOO.util.Event.addListener(
-				this.a_tag,
-				'click',
-				function(e, entry) {
-					YAHOO.util.Event.preventDefault(e);
-					entry.createTag();
-				},
-				this
-			);
+			this.a_tag.addEventListener('click', e => {
+				e.preventDefault();
+				this.createTag();
+			});
 
 			this.input_element.parentNode.insertBefore(
 				this.a_tag,
@@ -180,50 +172,35 @@ class SiteTagEntry {
 			true
 		);
 
-		YAHOO.util.Event.on(
-			this.input_element,
-			'keydown',
-			function(e, entry) {
-				// capture enter key for new tags
-				if (YAHOO.util.Event.getCharCode(e) == 13) {
-					YAHOO.util.Event.stopEvent(e);
+		this.input_element.addEventListener('keydown', e => {
+			// capture enter key for new tags
+			if (e.key === 'Enter') {
+				e.stopPropagation();
+				e.preventDefault();
 
-					if (!this.item_selected) {
-						entry.createTag();
-					}
+				if (!this.item_selected) {
+					this.createTag();
 				}
-			},
-			this,
-			true
-		);
+			}
+		});
 
-		YAHOO.util.Event.on(
-			this.input_element,
-			'keyup',
-			this.updateAddTagElement,
-			this,
-			true
-		);
+		this.input_element.addEventListener('keyup', () => {
+			this.updateAddTagElement();
+		});
 
 		// support mouse paste beginning the autocomplete and updating the add
 		// button
-		YAHOO.util.Event.on(
-			this.input_element,
-			'paste',
-			function(e) {
-				YAHOO.lang.later(100, this, function() {
-					if (
-						this.auto_complete._sInitInputValue !==
-						this.input_element.value
-					) {
-						this.auto_complete.sendQuery(this.input_element.value);
-					}
-					this.updateAddTagElement();
-				});
-			},
-			this,
-			true
-		);
+		this.input_element.addEventListener('paste', () => {
+			setTimeout(() => {
+				if (
+					this.auto_complete._sInitInputValue !==
+					this.input_element.value
+				) {
+					this.auto_complete.sendQuery(this.input_element.value);
+				}
+				this.updateAddTagElement();
+			}, 100);
+		});
 
 		this.addDelimiterListener();
 
@@ -256,29 +233,18 @@ class SiteTagEntry {
 	addDelimiterListener() {
 		// use key-up instead of key-down to prevent annoying problem where the
 		// auto-complete container pops open after adding the tag
-		YAHOO.util.Event.addListener(
-			this.input_element,
-			'keyup',
-			function(e, entry) {
-				// add tag when "," or ";" is typed
-				if (
-					YAHOO.util.Event.getCharCode(e) == 188 ||
-					YAHOO.util.Event.getCharCode(e) == 59
-				) {
-					var delimeter_pos = entry.input_element.value.indexOf(',');
-					if (delimeter_pos == -1)
-						delimeter_pos = entry.input_element.value.indexOf(';');
+		this.input_element.addEventListener('keyup', e => {
+			// add tag when "," or ";" is typed
+			if (e.key === ';' || e.key === ',') {
+				var delimeter_pos = this.input_element.value.indexOf(',');
+				if (delimeter_pos == -1)
+					delimeter_pos = this.input_element.value.indexOf(';');
 
-					var tag_name = entry.input_element.value.slice(
-						0,
-						delimeter_pos
-					);
+				var tag_name = this.input_element.value.slice(0, delimeter_pos);
 
-					entry.addTag(tag_name);
-				}
-			},
-			this
-		);
+				this.addTag(tag_name);
+			}
+		});
 	}
 
 	addTagFromAutoComplete(oSelf, elItem, oData) {
@@ -460,16 +426,10 @@ class SiteTagEntry {
 			document.createTextNode(SiteTagEntry.remove_text)
 		);
 
-		YAHOO.util.Event.addListener(
-			anchor_tag,
-			'click',
-			function(e) {
-				YAHOO.util.Event.preventDefault(e);
-				this.removeTag(tag_name);
-			},
-			this,
-			true
-		);
+		anchor_tag.addEventListener('click', e => {
+			e.preventDefault();
+			this.removeTag(tag_name);
+		});
 
 		title = this.filterTitle(title);
 
@@ -522,13 +482,6 @@ class SiteTagEntry {
 	}
 
 	removeTag(tag_name) {
-		// remove event arrayener
-		var anchor_tag = document.getElementById(
-			this.id + '_tag_remove_' + tag_name
-		);
-
-		if (anchor_tag) YAHOO.util.Event.purgeElement(anchor_tag);
-
 		// remove array node
 		var li_tag = document.getElementById(this.id + '_tag_' + tag_name);
 		if (li_tag) {
