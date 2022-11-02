@@ -1,181 +1,226 @@
-var SiteDialog = function(el, user_config)
-{
-	SiteDialog.addSentinel();
+var Dom = YAHOO.util.Dom;
+var Event = YAHOO.util.Event;
 
-	this.initConfig(user_config);
-	this.initElements(el);
+class SiteDialog {
+	static STATE_OPENED = 1;
+	static STATE_CLOSED = 2;
+	static dialogs = [];
+	static has_push_state = window.pushState;
+	static opened_dialog_stack = [];
+	static desktop_sentinel = null;
+	static is_desktop = false;
+	static scroll_top = null;
+	static resize_debounce_delay = 30;
 
-	SiteDialog.dialogs.push(this);
-};
+	static RESIZE_NONE = 0;
+	static RESIZE_FILL = 1;
+	static RESIZE_CENTER = 2;
 
-SiteDialog.STATE_OPENED = 1;
-SiteDialog.STATE_CLOSED = 2;
-SiteDialog.dialogs = [];
-SiteDialog.has_push_state = (window.pushState);
-SiteDialog.opened_dialog_stack = [];
-SiteDialog.desktop_sentinel = null;
-SiteDialog.is_desktop = false;
-SiteDialog.scroll_top = null;
-SiteDialog.resize_debounce_delay = 30;
-
-SiteDialog.RESIZE_NONE = 0;
-SiteDialog.RESIZE_FILL = 1;
-SiteDialog.RESIZE_CENTER = 2;
-
-SiteDialog.updateLayout = function()
-{
-	if (SiteDialog.opened_dialog_stack.length === 0) {
-		for (i = 0; i < document.body.childNodes.length; i++) {
-			YAHOO.util.Dom.removeClass(
-				document.body.childNodes[i],
-				'site-dialog-hidden'
-			);
+	static DEFAULT_CONFIG = {
+		USE_OVERLAY: {
+			key: 'use_overlay',
+			value: true,
+			validator: YAHOO.lang.isBoolean
+		},
+		/**
+		 * Allow clicking outside the dialog to close the dialog.
+		 */
+		DISMISSABLE: {
+			key: 'dismissable',
+			value: true,
+			validator: YAHOO.lang.isBoolean
+		},
+		/**
+		 * Only show dialog in mobile layout. If switching back to desktop, the
+		 * dialog is automatically closed.
+		 */
+		MOBILE_ONLY: {
+			key: 'mobile_only',
+			value: false,
+			validator: YAHOO.lang.isBoolean
+		},
+		/**
+		 * Use pushState API if available to control opening and closing the
+		 * dialog.
+		 */
+		USE_PUSH_STATE: {
+			key: 'use_push_state',
+			value: true,
+			validator: YAHOO.lang.isBoolean
+		},
+		CLASS_NAME: {
+			key: 'class_name',
+			value: ''
+		},
+		TOGGLE_ELEMENT: {
+			key: 'toggle_element',
+			value: null
+		},
+		RELATIVE_CONTAINER: {
+			key: 'relative_container',
+			value: null
+		},
+		RESIZE_MODE: {
+			key: 'resize_mode',
+			value: SiteDialog.RESIZE_FILL,
+			validator: YAHOO.lang.isNumber
 		}
+	};
 
-		// Also re-show all dialogs. Needed because relatively positioned
-		// dialogs may not be children of the body element when updateLayout()
-		// is called.
-		for (j = 0; j < SiteDialog.dialogs.length; j++) {
-			YAHOO.util.Dom.removeClass(
-				SiteDialog.dialogs[j].dialog,
-				'site-dialog-hidden'
-			);
-			if (SiteDialog.dialogs[j].overlay) {
+	constructor(el, user_config) {
+		SiteDialog.addSentinel();
+
+		this.initConfig(user_config);
+		this.initElements(el);
+
+		SiteDialog.dialogs.push(this);
+	}
+
+	static updateLayout() {
+		if (SiteDialog.opened_dialog_stack.length === 0) {
+			for (i = 0; i < document.body.childNodes.length; i++) {
 				YAHOO.util.Dom.removeClass(
-					SiteDialog.dialogs[j].overlay,
+					document.body.childNodes[i],
 					'site-dialog-hidden'
 				);
 			}
-		}
 
-		if (SiteDialog.scroll_top !== null) {
-			window.scrollTo(0, SiteDialog.scroll_top);
-			SiteDialog.scroll_top = null;
-		}
-	} else {
-		// save scroll position
-		SiteDialog.scroll_top = YAHOO.util.Dom.getDocumentScrollTop();
+			// Also re-show all dialogs. Needed because relatively positioned
+			// dialogs may not be children of the body element when updateLayout()
+			// is called.
+			for (j = 0; j < SiteDialog.dialogs.length; j++) {
+				YAHOO.util.Dom.removeClass(
+					SiteDialog.dialogs[j].dialog,
+					'site-dialog-hidden'
+				);
+				if (SiteDialog.dialogs[j].overlay) {
+					YAHOO.util.Dom.removeClass(
+						SiteDialog.dialogs[j].overlay,
+						'site-dialog-hidden'
+					);
+				}
+			}
 
-		window.scrollTo(0, 0);
+			if (SiteDialog.scroll_top !== null) {
+				window.scrollTo(0, SiteDialog.scroll_top);
+				SiteDialog.scroll_top = null;
+			}
+		} else {
+			// save scroll position
+			SiteDialog.scroll_top = YAHOO.util.Dom.getDocumentScrollTop();
 
-		var top_index = SiteDialog.opened_dialog_stack.length - 1;
-		var top_dialog = SiteDialog.opened_dialog_stack[top_index];
-		for (i = 0; i < document.body.childNodes.length; i++) {
-			var node = document.body.childNodes[i];
+			window.scrollTo(0, 0);
 
-			// don't hide the top-level opened dialog
-			if (node === top_dialog.dialog) {
-				YAHOO.util.Dom.removeClass(node, 'site-dialog-hidden');
+			var top_index = SiteDialog.opened_dialog_stack.length - 1;
+			var top_dialog = SiteDialog.opened_dialog_stack[top_index];
+			for (i = 0; i < document.body.childNodes.length; i++) {
+				var node = document.body.childNodes[i];
 
-			// don't hide sentinel
-			} else if (node !== SiteDialog.desktop_sentinel) {
-				YAHOO.util.Dom.addClass(node, 'site-dialog-hidden');
+				// don't hide the top-level opened dialog
+				if (node === top_dialog.dialog) {
+					YAHOO.util.Dom.removeClass(node, 'site-dialog-hidden');
+
+					// don't hide sentinel
+				} else if (node !== SiteDialog.desktop_sentinel) {
+					YAHOO.util.Dom.addClass(node, 'site-dialog-hidden');
+				}
 			}
 		}
 	}
-};
 
-SiteDialog.raiseDialog = function(dialog)
-{
-	var index = null;
-	for (var i = 0; i < SiteDialog.opened_dialog_stack.length; i++) {
-		if (SiteDialog.opened_dialog_stack[i] === dialog) {
-			index = i;
-			break;
-		}
-	}
-
-	if (index !== null) {
-		SiteDialog.opened_dialog_stack.splice(index, 1);
-	}
-
-	SiteDialog.opened_dialog_stack.push(dialog);
-	SiteDialog.updateLayout();
-};
-
-SiteDialog.lowerDialog = function(dialog)
-{
-	var index = null;
-	for (var i = 0; i < SiteDialog.opened_dialog_stack.length; i++) {
-		if (SiteDialog.opened_dialog_stack[i] === dialog) {
-			index = i;
-			break;
-		}
-	}
-
-	if (index !== null) {
-		SiteDialog.opened_dialog_stack.splice(index, 1);
-	}
-
-	SiteDialog.updateLayout();
-};
-
-SiteDialog.addSentinel = function()
-{
-	if (SiteDialog.desktop_sentinel === null) {
-		SiteDialog.desktop_sentinel = document.createElement('div');
-		SiteDialog.desktop_sentinel.className = 'site-dialog-sentinel';
-		document.body.appendChild(SiteDialog.desktop_sentinel);
-
-		var timeout = null;
-
-		var checkSentinel = function()
-		{
-			var display = YAHOO.util.Dom.getComputedStyle(
-				SiteDialog.desktop_sentinel,
-				'display'
-			);
-
-			if (display === 'none' && !SiteDialog.is_desktop) {
-				// changing from mobile to desktop
-				SiteDialog.is_desktop = true;
-				SiteDialog.handleLayoutChange();
-			} else if (display === 'block' && SiteDialog.is_desktop) {
-				// changing from desktop to mobile
-				SiteDialog.is_desktop = false;
-				SiteDialog.handleLayoutChange();
+	static raiseDialog(dialog) {
+		var index = null;
+		for (var i = 0; i < SiteDialog.opened_dialog_stack.length; i++) {
+			if (SiteDialog.opened_dialog_stack[i] === dialog) {
+				index = i;
+				break;
 			}
-		};
+		}
 
-		var handleResize = function()
-		{
-			for (var i = 0; i < SiteDialog.dialogs.length; i++) {
-				SiteDialog.dialogs[i].handleResize();
+		if (index !== null) {
+			SiteDialog.opened_dialog_stack.splice(index, 1);
+		}
+
+		SiteDialog.opened_dialog_stack.push(dialog);
+		SiteDialog.updateLayout();
+	}
+
+	static lowerDialog(dialog) {
+		var index = null;
+		for (var i = 0; i < SiteDialog.opened_dialog_stack.length; i++) {
+			if (SiteDialog.opened_dialog_stack[i] === dialog) {
+				index = i;
+				break;
 			}
-		};
+		}
 
-		// Initialize layout state
-		if (YAHOO.util.Dom.hasClass(document.documentElement, 'ie8')) {
-			// Give IE8 time to load responsive styles before initializing
-			// mode. It needs to re-download and parse all the CSS. Respond.js
-			// does not provide an event for this. To do so, we add an element
-			// to the DOM that has a media query style that sets its display
-			// to 'none'. We check if the media query has been loaded on a
-			// short interval.
-			var mq_detect_el = document.createElement('div');
-			mq_detect_el.className = 'site-dialog-mq-detect';
-			document.body.appendChild(mq_detect_el);
-			var mq_detect_interval = setInterval(function() {
+		if (index !== null) {
+			SiteDialog.opened_dialog_stack.splice(index, 1);
+		}
+
+		SiteDialog.updateLayout();
+	}
+
+	static addSentinel() {
+		if (SiteDialog.desktop_sentinel === null) {
+			SiteDialog.desktop_sentinel = document.createElement('div');
+			SiteDialog.desktop_sentinel.className = 'site-dialog-sentinel';
+			document.body.appendChild(SiteDialog.desktop_sentinel);
+
+			var timeout = null;
+
+			var checkSentinel = function() {
 				var display = YAHOO.util.Dom.getComputedStyle(
-					mq_detect_el,
+					SiteDialog.desktop_sentinel,
 					'display'
 				);
-				if (display === 'none') {
-					mq_detect_el.parentNode.removeChild(mq_detect_el);
-					checkSentinel();
-					clearInterval(mq_detect_interval);
-					mq_detect_interval = null;
-				}
-			}, 10);
-			setTimeout(checkSentinel, 1000);
-		} else {
-			checkSentinel();
-		}
 
-		YAHOO.util.Event.on(
-			window,
-			'resize',
-			function (e) {
+				if (display === 'none' && !SiteDialog.is_desktop) {
+					// changing from mobile to desktop
+					SiteDialog.is_desktop = true;
+					SiteDialog.handleLayoutChange();
+				} else if (display === 'block' && SiteDialog.is_desktop) {
+					// changing from desktop to mobile
+					SiteDialog.is_desktop = false;
+					SiteDialog.handleLayoutChange();
+				}
+			};
+
+			var handleResize = function() {
+				for (var i = 0; i < SiteDialog.dialogs.length; i++) {
+					SiteDialog.dialogs[i].handleResize();
+				}
+			};
+
+			// Initialize layout state
+			if (YAHOO.util.Dom.hasClass(document.documentElement, 'ie8')) {
+				// Give IE8 time to load responsive styles before initializing
+				// mode. It needs to re-download and parse all the CSS. Respond.js
+				// does not provide an event for this. To do so, we add an element
+				// to the DOM that has a media query style that sets its display
+				// to 'none'. We check if the media query has been loaded on a
+				// short interval.
+				var mq_detect_el = document.createElement('div');
+				mq_detect_el.className = 'site-dialog-mq-detect';
+				document.body.appendChild(mq_detect_el);
+				var mq_detect_interval = setInterval(function() {
+					var display = YAHOO.util.Dom.getComputedStyle(
+						mq_detect_el,
+						'display'
+					);
+					if (display === 'none') {
+						mq_detect_el.parentNode.removeChild(mq_detect_el);
+						checkSentinel();
+						clearInterval(mq_detect_interval);
+						mq_detect_interval = null;
+					}
+				}, 10);
+				setTimeout(checkSentinel, 1000);
+			} else {
+				checkSentinel();
+			}
+
+			YAHOO.util.Event.on(window, 'resize', function(e) {
 				// Debounce resize updates so they only fire every at most
 				// every SiteDialog.resize_debounce_delay ms.
 				if (timeout) {
@@ -186,120 +231,59 @@ SiteDialog.addSentinel = function()
 					handleResize();
 					timeout = null;
 				}, SiteDialog.resize_debounce_delay);
+			});
+		}
+	}
+
+	static handleLayoutChange() {
+		for (var i = 0; i < SiteDialog.dialogs.length; i++) {
+			SiteDialog.dialogs[i].handleLayoutChange();
+		}
+	}
+
+	initDefaultConfig() {
+		this.config.addProperty(SiteDialog.DEFAULT_CONFIG.USE_OVERLAY.key, {
+			value: SiteDialog.DEFAULT_CONFIG.USE_OVERLAY.value,
+			validator: SiteDialog.DEFAULT_CONFIG.USE_OVERLAY.validator
+		});
+
+		this.config.addProperty(SiteDialog.DEFAULT_CONFIG.DISMISSABLE.key, {
+			value: SiteDialog.DEFAULT_CONFIG.DISMISSABLE.value,
+			validator: SiteDialog.DEFAULT_CONFIG.DISMISSABLE.validator
+		});
+
+		this.config.addProperty(SiteDialog.DEFAULT_CONFIG.MOBILE_ONLY.key, {
+			value: SiteDialog.DEFAULT_CONFIG.MOBILE_ONLY.value,
+			validator: SiteDialog.DEFAULT_CONFIG.MOBILE_ONLY.validator
+		});
+
+		this.config.addProperty(SiteDialog.DEFAULT_CONFIG.USE_PUSH_STATE.key, {
+			value: SiteDialog.DEFAULT_CONFIG.USE_PUSH_STATE.value,
+			validator: SiteDialog.DEFAULT_CONFIG.USE_PUSH_STATE.validator
+		});
+
+		this.config.addProperty(SiteDialog.DEFAULT_CONFIG.CLASS_NAME.key, {
+			value: SiteDialog.DEFAULT_CONFIG.CLASS_NAME.value
+		});
+
+		this.config.addProperty(SiteDialog.DEFAULT_CONFIG.TOGGLE_ELEMENT.key, {
+			value: SiteDialog.DEFAULT_CONFIG.TOGGLE_ELEMENT.value
+		});
+
+		this.config.addProperty(SiteDialog.DEFAULT_CONFIG.RESIZE_MODE.key, {
+			value: SiteDialog.DEFAULT_CONFIG.RESIZE_MODE.value,
+			validator: SiteDialog.DEFAULT_CONFIG.RESIZE_MODE.validator
+		});
+
+		this.config.addProperty(
+			SiteDialog.DEFAULT_CONFIG.RELATIVE_CONTAINER.key,
+			{
+				value: SiteDialog.DEFAULT_CONFIG.RELATIVE_CONTAINER.value
 			}
 		);
 	}
-};
 
-SiteDialog.handleLayoutChange = function()
-{
-	for (var i = 0; i < SiteDialog.dialogs.length; i++) {
-		SiteDialog.dialogs[i].handleLayoutChange();
-	}
-};
-
-(function() {
-	var Dom   = YAHOO.util.Dom;
-	var Event = YAHOO.util.Event;
-	var Anim  = YAHOO.util.Anim;
-
-	var proto = SiteDialog.prototype;
-
-	// {{{ Configuration
-
-	var DEFAULT_CONFIG = {
-		'USE_OVERLAY': {
-			key: 'use_overlay',
-			value: true,
-			validator: YAHOO.lang.isBoolean
-		},
-		/**
-		 * Allow clicking outside the dialog to close the dialog.
-		 */
-		'DISMISSABLE': {
-			key: 'dismissable',
-			value: true,
-			validator: YAHOO.lang.isBoolean
-		},
-		/**
-		 * Only show dialog in mobile layout. If switching back to desktop, the
-		 * dialog is automatically closed.
-		 */
-		'MOBILE_ONLY': {
-			key: 'mobile_only',
-			value: false,
-			validator: YAHOO.lang.isBoolean
-		},
-		/**
-		 * Use pushState API if available to control opening and closing the
-		 * dialog.
-		 */
-		'USE_PUSH_STATE': {
-			key: 'use_push_state',
-			value: true,
-			validator: YAHOO.lang.isBoolean
-		},
-		'CLASS_NAME': {
-			key: 'class_name',
-			value: ''
-		},
-		'TOGGLE_ELEMENT': {
-			key: 'toggle_element',
-			value: null
-		},
-		'RELATIVE_CONTAINER': {
-			key: 'relative_container',
-			value: null
-		},
-		'RESIZE_MODE': {
-			key: 'resize_mode',
-			value: SiteDialog.RESIZE_FILL,
-			validator: YAHOO.lang.isNumber
-		}
-	};
-
-	proto.initDefaultConfig = function()
-	{
-		this.config.addProperty(DEFAULT_CONFIG.USE_OVERLAY.key, {
-			value: DEFAULT_CONFIG.USE_OVERLAY.value,
-			validator: DEFAULT_CONFIG.USE_OVERLAY.validator
-		});
-
-		this.config.addProperty(DEFAULT_CONFIG.DISMISSABLE.key, {
-			value: DEFAULT_CONFIG.DISMISSABLE.value,
-			validator: DEFAULT_CONFIG.DISMISSABLE.validator
-		});
-
-		this.config.addProperty(DEFAULT_CONFIG.MOBILE_ONLY.key, {
-			value: DEFAULT_CONFIG.MOBILE_ONLY.value,
-			validator: DEFAULT_CONFIG.MOBILE_ONLY.validator
-		});
-
-		this.config.addProperty(DEFAULT_CONFIG.USE_PUSH_STATE.key, {
-			value: DEFAULT_CONFIG.USE_PUSH_STATE.value,
-			validator: DEFAULT_CONFIG.USE_PUSH_STATE.validator
-		});
-
-		this.config.addProperty(DEFAULT_CONFIG.CLASS_NAME.key, {
-			value: DEFAULT_CONFIG.CLASS_NAME.value
-		});
-
-		this.config.addProperty(DEFAULT_CONFIG.TOGGLE_ELEMENT.key, {
-			value: DEFAULT_CONFIG.TOGGLE_ELEMENT.value
-		});
-
-		this.config.addProperty(DEFAULT_CONFIG.RESIZE_MODE.key, {
-			value: DEFAULT_CONFIG.RESIZE_MODE.value,
-			validator: DEFAULT_CONFIG.RESIZE_MODE.validator
-		});
-
-		this.config.addProperty(DEFAULT_CONFIG.RELATIVE_CONTAINER.key, {
-			value: DEFAULT_CONFIG.RELATIVE_CONTAINER.value
-		});
-	};
-
-	proto.initConfig = function(user_config)
-	{
+	initConfig(user_config) {
 		this.config = new YAHOO.util.Config(this);
 		this.initDefaultConfig();
 
@@ -310,12 +294,9 @@ SiteDialog.handleLayoutChange = function()
 
 		// Flatten config object. We're not using events.
 		this.config = this.config.getConfig();
-	};
+	}
 
-	// }}}
-
-	proto.initElements = function(el)
-	{
+	initElements(el) {
 		this.header = this.drawHeader();
 		this.body = this.drawBody();
 		this.scroll = this.drawScroll(this.header, this.body);
@@ -364,24 +345,19 @@ SiteDialog.handleLayoutChange = function()
 		if (SiteDialog.has_push_state && this.config.use_push_state) {
 			Event.on(window, 'popstate', this.handlePopState, this, true);
 		}
-	};
+	}
 
-	proto.getPushStateId = function()
-	{
+	getPushStateId() {
 		return this.id;
-	};
+	}
 
-	// {{{ Element draw methods
-
-	proto.drawOverlay = function()
-	{
+	drawOverlay() {
 		var overlay = document.createElement('div');
 		overlay.className = 'site-dialog-overlay';
 		return overlay;
-	};
+	}
 
-	proto.drawDialog = function(container, el)
-	{
+	drawDialog(container, el) {
 		var dialog;
 
 		if (el) {
@@ -407,10 +383,9 @@ SiteDialog.handleLayoutChange = function()
 		dialog.appendChild(container);
 
 		return dialog;
-	};
+	}
 
-	proto.drawScroll = function(header, body)
-	{
+	drawScroll(header, body) {
 		var scroll = document.createElement('div');
 		scroll.className = 'site-dialog-scroll';
 
@@ -418,10 +393,15 @@ SiteDialog.handleLayoutChange = function()
 		scroll.appendChild(body);
 
 		return scroll;
-	};
+	}
 
-	proto.drawContainer = function(scroll, footer)
-	{
+	drawHeader() {
+		var header = document.createElement('div');
+		header.className = 'site-dialog-header';
+		return header;
+	}
+
+	drawContainer(scroll, footer) {
 		var container = document.createElement('div');
 		container.className = 'site-dialog-container';
 
@@ -429,34 +409,21 @@ SiteDialog.handleLayoutChange = function()
 		container.appendChild(footer);
 
 		return container;
-	};
+	}
 
-	proto.drawHeader = function()
-	{
-		var header = document.createElement('div');
-		header.className = 'site-dialog-header';
-		return header;
-	};
-
-	proto.drawBody = function()
-	{
+	drawBody() {
 		var body = document.createElement('div');
 		body.className = 'site-dialog-body';
 		return body;
-	};
+	}
 
-	proto.drawFooter = function()
-	{
+	drawFooter() {
 		var footer = document.createElement('div');
 		footer.className = 'site-dialog-footer';
 		return footer;
-	};
+	}
 
-	// }}}
-	// {{{ Opening and closing
-
-	proto.open = function()
-	{
+	open() {
 		if (this.isOpened()) {
 			return;
 		}
@@ -465,7 +432,6 @@ SiteDialog.handleLayoutChange = function()
 
 		Dom.removeClass(this.overlay, 'site-dialog-closed');
 		Dom.removeClass(this.dialog, 'site-dialog-closed');
-
 
 		// need to set state before doing initial positioning
 		this.state = SiteDialog.STATE_OPENED;
@@ -476,16 +442,9 @@ SiteDialog.handleLayoutChange = function()
 		if (!SiteDialog.is_desktop) {
 			SiteDialog.raiseDialog(this);
 		}
-	};
+	}
 
-	proto.openWithAnimation = function()
-	{
-		// TODO: implement animations
-		this.open();
-	};
-
-	proto.close = function()
-	{
+	close() {
 		if (this.isClosed()) {
 			return;
 		}
@@ -497,93 +456,80 @@ SiteDialog.handleLayoutChange = function()
 		Dom.addClass(this.dialog, 'site-dialog-closed');
 
 		this.state = SiteDialog.STATE_CLOSED;
-	};
+	}
 
-	proto.closeWithAnimation = function()
-	{
+	openWithAnimation() {
+		// TODO: implement animations
+		this.open();
+	}
+
+	closeWithAnimation() {
 		// TODO: implement animations
 		this.close();
-	};
+	}
 
-	proto.isOpened = function()
-	{
-		return (this.state === SiteDialog.STATE_OPENED);
-	};
+	isOpened() {
+		return this.state === SiteDialog.STATE_OPENED;
+	}
 
-	proto.isClosed = function()
-	{
-		return (!this.isOpened());
-	};
+	isClosed() {
+		return !this.isOpened();
+	}
 
-	proto.raise = function()
-	{
+	raise() {
 		if (this.overlay) {
 			SwatZIndexManager.raiseElement(this.overlay);
 		}
 		SwatZIndexManager.raiseElement(this.dialog);
-	};
+	}
 
-	proto.toggle = function()
-	{
+	toggle() {
 		if (this.isOpened()) {
 			this.close();
 		} else {
 			this.open();
 		}
-	};
+	}
 
-	proto.toggleWithAnimation = function()
-	{
+	toggleWithAnimation() {
 		if (this.isOpened()) {
 			this.closeWithAnimation();
 		} else {
 			this.openWithAnimation();
 		}
-	};
+	}
 
-	// }}}
-	// {{{ Content setup methods
-
-	proto.appendToHeader = function(node)
-	{
+	appendToHeader(node) {
 		this.header.appendChild(node);
-	};
+	}
 
-	proto.appendToBody = function(node)
-	{
+	appendToBody(node) {
 		this.body.appendChild(node);
-	};
+	}
 
-	proto.appendToFooter = function(node)
-	{
+	appendToFooter(node) {
 		this.footer.appendChild(node);
-	};
+	}
 
-	proto.clearHeader = function()
-	{
+	clearHeader() {
 		while (this.header.firstChild) {
 			this.header.removeChild(this.header.firstChild);
 		}
-	};
+	}
 
-	proto.clearBody = function()
-	{
+	clearBody() {
 		while (this.body.firstChild) {
 			this.body.removeChild(this.body.firstChild);
 		}
-	};
+	}
 
-	proto.clearFooter = function()
-	{
+	clearFooter() {
 		while (this.footer.firstChild) {
 			this.footer.removeChild(this.footer.firstChild);
 		}
-	};
+	}
 
-	// }}}
-
-	proto.handleLayoutChange = function()
-	{
+	handleLayoutChange() {
 		// switching from mobile to desktop
 		if (SiteDialog.is_desktop) {
 			// remove from stack if opened
@@ -601,9 +547,8 @@ SiteDialog.handleLayoutChange = function()
 				this.config.relative_container.appendChild(this.dialog);
 			}
 
-		// switching from desktop to mobile
+			// switching from desktop to mobile
 		} else {
-
 			// put dialog in body
 			if (this.config.relative_container) {
 				document.body.appendChild(this.dialog);
@@ -614,28 +559,27 @@ SiteDialog.handleLayoutChange = function()
 				SiteDialog.raiseDialog(this);
 			}
 		}
-	};
+	}
 
-	proto.handleResize = function()
-	{
+	handleResize() {
 		if (this.isClosed()) {
 			return;
 		}
 
-		if (this.config.resize_mode === SiteDialog.RESIZE_FILL ||
-			!SiteDialog.is_desktop) {
+		if (
+			this.config.resize_mode === SiteDialog.RESIZE_FILL ||
+			!SiteDialog.is_desktop
+		) {
 			var footer_region = Dom.getRegion(this.footer);
 
-			var margin = parseInt(Dom.getStyle(this.container, 'marginTop')) +
+			var margin =
+				parseInt(Dom.getStyle(this.container, 'marginTop')) +
 				parseInt(Dom.getStyle(this.container, 'marginBottom'));
 
-			margin = (isNaN(margin)) ? 0 : margin;
+			margin = isNaN(margin) ? 0 : margin;
 
-			this.scroll.style.height = (
-				Dom.getViewportHeight() -
-				footer_region.height -
-				margin
-			) + 'px';
+			this.scroll.style.height =
+				Dom.getViewportHeight() - footer_region.height - margin + 'px';
 
 			this.dialog.style.height = Dom.getViewportHeight() + 'px';
 			this.dialog.style.top = null;
@@ -643,10 +587,11 @@ SiteDialog.handleLayoutChange = function()
 			this.dialog.style.height = 'auto';
 			this.scroll.style.height = 'auto';
 
-			var margin = parseInt(Dom.getStyle(this.container, 'marginTop')) +
+			var margin =
+				parseInt(Dom.getStyle(this.container, 'marginTop')) +
 				parseInt(Dom.getStyle(this.container, 'marginBottom'));
 
-			margin = (isNaN(margin)) ? 0 : margin;
+			margin = isNaN(margin) ? 0 : margin;
 
 			var region = Dom.getRegion(this.container);
 			var viewport = Dom.getViewportHeight();
@@ -658,16 +603,17 @@ SiteDialog.handleLayoutChange = function()
 			this.dialog.style.height = 'auto';
 			this.scroll.style.height = 'auto';
 		}
-	};
+	}
 
-	proto.handleDocumentClick = function(e)
-	{
+	handleDocumentClick(e) {
 		if (this.isOpened()) {
 			var prevent_close = false;
 			var target = Event.getTarget(e);
 			while (target.parentNode && !prevent_close) {
-				if (target === this.dialog ||
-					target === this.config.toggle_element) {
+				if (
+					target === this.dialog ||
+					target === this.config.toggle_element
+				) {
 					prevent_close = true;
 				}
 				target = target.parentNode;
@@ -677,24 +623,21 @@ SiteDialog.handleLayoutChange = function()
 				this.closeWithAnimation();
 			}
 		}
-	};
+	}
 
-	proto.handleDocumentKeyDown = function(e)
-	{
+	handleDocumentKeyDown(e) {
 		// allow escape key to close dialog
 		if (this.isOpened() && e.keyCode === 27) {
 			this.closeWithAnimation();
 		}
-	};
+	}
 
-	proto.handlePopState = function(e)
-	{
+	handlePopState(e) {
 		// TODO: push/pop-state is not supported yet.
 		if (e.state && e.state.id && e.state.id === this.getPushStateId()) {
 			this.open();
 		} else {
 			this.close();
 		}
-	};
-
-})();
+	}
+}
